@@ -1,0 +1,29 @@
+{
+    "name":"VRCStuff",
+    "id":"com.vrcstuff.udonstuff.vcc-listing",
+    "url":"https://vrcstuff.github.io/UDONStuff/index.json",
+    "author":{
+        "name":"VRCStuff",
+        "url":"https://github.com/VRCStuff/UDONStuff"
+    },
+    "description":"A collection of UDON nicknaks for VRChat",
+    "infoLink":{
+        "url":"https://github.com/VRCStuff/UDONStuff",
+        "text":"View on GitHub"
+    },
+    "bannerUrl":"banner.png",
+    "packages":[
+        {
+            "name":"com.vrcstuff.common",
+            "releases":[
+                "https://github.com/VRCstuff/UDONStuff/releases/download/0.1.0/com.vrcstuff.common-0.1.0.zip"
+            ]
+        },
+        {
+            "name":"com.vrcstuff.controls",
+            "releases":[
+                "https://github.com/VRCstuff/UDONStuff/releases/download/0.1.0/com.vrcstuff.controls-0.1.0.zip"
+            ]
+        }
+    ]
+}
