@@ -1,43 +1,63 @@
-# VPM Package Listing Template
-
-Starter for making your own Package Listings, including automation for building and publishing them.
-
-Once you're all set up, you'll be able to update the `source.json` file, and generate a listing which works in the VPM for delivering updates for all the listed packages.
-
-## ▶ Getting Started
-
-* Press [![Use This Template](https://user-images.githubusercontent.com/737888/185467681-e5fdb099-d99f-454b-8d9e-0760e5a6e588.png)](https://github.com/vrchat-community/template-package-listing/generate)
-to start a new GitHub project based on this template, and follow the directions there. 
-  * Choose a fitting repository name and description.
-  * Set the visibility to 'Public'. You can also choose 'Private' and change it later.
-  * You don't need to select 'Include all branches.'
-* Edit this project on GitHub in your web browser, or clone it repository locally using Git.
-  * If you're unfamiliar with Git and GitHub, [visit GitHub's documentation](https://docs.github.com/en/get-started/quickstart/
+![OpenPutt Banner](https://github.com/mikeee324/OpenPutt/blob/dev/Website/banner.png?raw=true)  
   
-## Setting up the Automation
+OpenPutt is a golf game prefab for VRChat. This is still in development so things might act weird or be broken.  
+If you have suggestions or can help me fix things please let me know!  
+  
+The aim for this prefab is to make it easier to make golf game worlds so more people make them!  
+Lets play some golf!  
 
-You'll need to edit some of the files in this template, starting with [`source.json`](source.json):
-- Fill out general information about your listing, such as the `name`, `id`, `author`, `description`, etc.
-- Make sure to update the "url" field on line 4, replacing "vrchat-community" with your GitHub username, and "template-package-listing" with your repo name. This is the link that will be used to download your listing once it's published by GitHub. For example, the user "thupper" who made a repo called "thupper-listing" would update the url to "https://thupper.github.io/thupper-listing/index.json".
-- Update the "url" within "infoLink" (on line 11) with the url of this new repo you've created.
-- If you'd like to include packages hosted on GitHub, specify them in `githubRepos`.
-- If you'd like to include packages hosted elsewhere as a `.zip` file, specify them in `packages`.
-  - You can safely remove either `githubRepos` or `packages` if you're not using them. 
-- Finally, go to the "Settings" page for your repo, then choose "Pages", and look for the heading "Build and deployment". Change the "Source" dropdown from "Deploy from a branch" to "GitHub Actions".
+   
+# Dependencies (Install these first!!!)
+- UdonSharp 1.1.8+ (Use VCC!)
+- CyanLasers Player Object Pool 1.1.2+ - https://cyanlaser.github.io/CyanPlayerObjectPool/
+- Varneons Array Extensions 0.3.0 - https://github.com/Varneon/VUdon-ArrayExtensions/releases/tag/0.3.0
 
-## 📃 Rebuilding the Listing
+Also wanted to mention the Udon profiler from here - https://gist.github.com/MerlinVR/2da80b29361588ddb556fd8d3f3f47b5  
+This is included in the project for ease of use on my part  
 
-Whenever you make a change to the `main` branch, or when you trigger it manually, the 'Build Repo Listing' action will make a new index of all the releases available and publish them as a website hosted fore free on GitHub Pages. This listing can be used by the VPM to keep your package up to date, and the generated index page can serve as a simple landing page with info for your package. The URL for your package will be in the format https://username.github.io/repo-name.
+# Updates from non VCC builds
+1. Close Unity
+2. Delete the Assets/OpenPutt folder and .meta file
+3. Install VCC build of OpenPutt as per below
+4. Open your project and hopefully it's not brokey (You may have to drag in a new Openputt prefab and use that if it's broken)
 
-## 🏠 Customizing the Landing Page
+# Installation
+1. Add OpenPutt to VCC by visiting [this page](https://mikeee324.github.io/OpenPutt/)
+2. Click 'Add to VCC' and follow the instructions to add the repository
+3. You can then add OpenPutt to your project inside VCC
 
-The contents of the `Website` directory can be customized to change the appearance of the landing page. Most of the information will be automatically filled in with information from [`source.json`](source.json). Customizing the landing page by hand is not required.
+# Scene Setup
+1. Drag in the OpenPutt prefab from Packages/OpenPutt/Prefabs
 
-## Technical Stuff
+# Adding Courses
+1. Drag in a new OpenPuttCourse prefab into the Holes object of the OpenPutt prefab
+2. Move the start pad to where you want players to start the course
+3. Move the Hole box collider to the hole in your course
+4. Assign any floor meshes for that course to the CourseManager script at the root of the Course prefab (Allows OpenPutt to know if the ball is on the correct course or not)
+6. Add a par/max score to the same CourseManager script
+5. Add the Course prefab to the list of courses in the main OpenPutt script
 
-You are welcome to make your own changes to the automation process to make it fit your needs, and you can create Pull Requests if you have some changes you think we should adopt. Here's some more info on the included automation:
+```
+Note - Courses should have at least the floor as it's own mesh.
+When setting up colliders make sure to use the physics materials included with the prefab.
+Floor meshes for your courses need to use the FloorPhysics material so OpenPutt knows if the ball is on top of the course floor or not.
+Anything that the ball needs to bounce off (walls, obstacles etc) please use the WallPhysics material so OpenPutt can handle the bouncing properly (default unity physics doesn't do this so well)
+```
 
-### Build Listing
-[build-listing.yml](.github/workflows/build-listing.yml)
+# Adding scoreboards to the world
+1. Drag in a new ScoreboardPositioner prefab into the scene and position it to where you would like it to be
+2. You can adjust rules on when a scoreboard will be shown at that position in the inspector window
+3. Assign the reference to the ScoreboardManager and add the ScoreboardPositioner to the list of 'Scoreboard Positions' on the ScoreboardManager itself
 
-This is a composite action which builds a vpm-compatible [Repo Listing](https://vcc.docs.vrchat.com/vpm/repos) based on the items you've added to your `source.json` file. you've created. In order to find all your releases and combine them into a listing, it checks out [another repository](https://github.com/vrchat-community/package-list-action) which has a [Nuke](https://nuke.build/) project which includes the VPM core lib to have access to its types and methods. This project will be expanded to include more functionality in the future - for now, the action just calls its `BuildRepoListing` target, which calls `RebuildHomePage` when it completes. If you wanted to make an action that just rebuilds the home page, you could call that directly instead - just copy the existing call and replace the target names.
+The scoreboards themselves are in a 'pool' and will be moved around to the closest avaiable position. There are 3 scoreboards in the pool by default but you can add/remove them as you like. Just remember to set up the references between the scoreboards and ScoreboardManager correctly!
+
+# Notes
+There will be more docs on everything at some point (like how to set up the meshes for courses etc), this is just a first go at releasing something so people can have a play with it
+
+# Worlds
+A list of worlds where you can see this in action (If you make one let me know!)
+- [Junkyard Golf - mikeee324](https://vrchat.com/home/world/wrld_d62918a1-9172-40cd-93a9-5d8546dad6cf)
+
+# Patreon Thing
+If you feel the need to support me you can do so here: https://patreon.com/mikeee324  
+Thanks
