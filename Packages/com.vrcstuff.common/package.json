@@ -1,0 +1,15 @@
+{
+  "name": "com.vrcstuff.common",
+  "displayName": "UDONStuff Common",
+  "version": "0.1.0",
+  "unity": "2019.4",
+  "description": "Common scripts that are in use through the other libraries",
+  "vrchatVersion": "2022.1.1",
+  "author": {
+    "name": "VRCStuff",
+    "email": "vrcstuff@github.com",
+    "url": "https://github.com/VRCstuff/UDONStuff"
+  },
+  "dependencies": {
+  }
+}
