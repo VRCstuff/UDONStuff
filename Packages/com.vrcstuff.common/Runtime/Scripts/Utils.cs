@@ -238,7 +238,7 @@ namespace com.vrcstuff.udon
         /// <param name="sharedSoundObject">The shared AudioSource GameObject</param>
         /// <param name="lowestPitch">The lowest random pitch value</param>
         /// <param name="highestPitch">The highest random pitch value</param>
-        public static void PlaySound(this UdonSharpBehaviour context, AudioClip aClip, GameObject sharedSoundObject, float lowestPitch = 1, float highestPitch = 1)
+        public static void PlaySound(this AudioSource context, AudioClip aClip, Vector3 moveToWorldPosition, float lowestPitch = 1, float highestPitch = 1)
         {
             if (aClip == null)
             {
@@ -246,39 +246,15 @@ namespace com.vrcstuff.udon
                 return;
             }
 
-            if (sharedSoundObject != null && sharedSoundObject.GetComponent<AudioSource>() != null)
+            if (context != null)
             {
-                AudioSource Asrc = sharedSoundObject.GetComponent<AudioSource>();
-                sharedSoundObject.transform.position = context.gameObject.transform.position;
-                Asrc.clip = aClip;
-                Asrc.pitch = UnityEngine.Random.Range(lowestPitch, highestPitch);
-                Asrc.Play();
+                context.clip = aClip;
+                context.pitch = UnityEngine.Random.Range(lowestPitch, highestPitch);
+                context.Play();
             }
-            else if (context.gameObject.GetComponent<AudioSource>() != null)
-            {
-                AudioSource Asrc = context.gameObject.GetComponent<AudioSource>();
-                Asrc.clip = aClip;
-                Asrc.pitch = UnityEngine.Random.Range(lowestPitch, highestPitch);
-                Asrc.Play();
-            }
-            else
-            {
-                Utils.LogError(context.gameObject.name, "I have no sound source attaced when I'm trying to play a sound.");
-            }
-        }
 
-        /// <summary>
-        /// This updates a soundsources volume at scale. We might just be able to remove this one. Who knows. It makes it a bit easier to standardise some stuff at least.
-        /// </summary>
-        /// <param name="context">Just write "this" please</param>
-        /// <param name="sharedSoundObject">This is the gameobject with the souurce on it.</param>
-        /// <param name="volume">Volume.... 0 to 1.</param>
-        public static void UpdateSoundSourceVolume(UdonSharpBehaviour context, GameObject sharedSoundObject, float volume = 0.5f)
-        {
-            if (sharedSoundObject != null && sharedSoundObject.GetComponent<AudioSource>() != null)
-                sharedSoundObject.GetComponent<AudioSource>().volume = volume;
-            else if (context.gameObject.GetComponent<AudioSource>() != null)
-                context.gameObject.GetComponent<AudioSource>().volume = volume;
+            if (moveToWorldPosition != Vector3.zero)
+                context.transform.position = moveToWorldPosition;
         }
     }
     #endregion
