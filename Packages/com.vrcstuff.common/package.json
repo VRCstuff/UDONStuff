@@ -10,6 +10,7 @@
     "email": "vrcstuff@github.com",
     "url": "https://github.com/VRCstuff/UDONStuff"
   },
-  "dependencies": {
+  "vpmDependencies": {
+    "com.vrchat.udonsharp": "1.1.8"
   }
 }

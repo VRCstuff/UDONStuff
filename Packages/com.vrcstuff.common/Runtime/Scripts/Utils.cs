@@ -114,6 +114,49 @@ namespace com.vrcstuff.udon
         /// </summary>
         /// <returns>Number of seconds since 2023-01-01 00:00:00 UTC</returns>
         public static float GetUnixTimestamp() => (float)(System.DateTime.UtcNow - new System.DateTime(2023, 1, 1, 0, 0, 0, System.DateTimeKind.Utc)).TotalSeconds;
+
+        /// <summary>
+        /// This plays a sound. Usually used for when you have a speaker that is moving around to keep the speaker count down. But can also be used on a local speaker to provide a small random pitch shift.
+        /// </summary>
+        /// <param name="context">Just write "this" please</param>
+        /// <param name="aClip">The audio clip the speaker should play</param>
+        /// <param name="sharedSoundObject">Provide this if you'll use a game obbject with a speaker moving around.</param>
+        /// <param name="lowestPitch">The lowest pitch the sound will have</param>
+        /// <param name="highestPitch">The highest pitch the sound will have</param>
+        public static void PlaySound(UdonSharpBehaviour context, AudioClip aClip, GameObject sharedSoundObject, float lowestPitch = 1, float highestPitch = 1)
+        {
+            if (context == null)
+            {
+                LogError("[unknown]", nameof(PlaySound) + " was called without context.");
+
+            }
+            if (aClip == null)
+            {
+                LogError(context.gameObject.name, "I'm calling the " + nameof(PlaySound) + " function with a missing audio clip.");
+                return;
+            }
+            if (sharedSoundObject != null && sharedSoundObject.GetComponent<AudioSource>() != null)
+            {
+                AudioSource Asrc = sharedSoundObject.GetComponent<AudioSource>();
+                sharedSoundObject.transform.position = context.gameObject.transform.position;
+                Asrc.clip = aClip;
+                Asrc.pitch = UnityEngine.Random.Range(lowestPitch, highestPitch);
+                Asrc.Play();
+                return;
+            }
+            else if (context.gameObject.GetComponent<AudioSource>() != null)
+            {
+                AudioSource Asrc = context.gameObject.GetComponent<AudioSource>();
+                Asrc.clip = aClip;
+                Asrc.pitch = UnityEngine.Random.Range(lowestPitch, highestPitch);
+                Asrc.Play();
+                return;
+            }
+            LogError(context.gameObject.name, "I have no sound source attaced when I'm trying to play a sound.");
+            return;
+        }
+
+
     }
 
     #region Extensions

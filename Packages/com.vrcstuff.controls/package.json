@@ -11,6 +11,9 @@
     "url": "https://github.com/VRCstuff/UDONStuff"
   },
   "dependencies": {
+    "com.unity.textmeshpro": "2.1.0"
+  },
+  "vpmDependencies": {
     "com.vrcstuff.common": "0.1.0"
   }
 }

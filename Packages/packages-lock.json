@@ -48,15 +48,6 @@
       "dependencies": {},
       "url": "https://packages.unity.com"
     },
-    "com.unity.inputsystem": {
-      "version": "1.2.0",
-      "depth": 1,
-      "source": "registry",
-      "dependencies": {
-        "com.unity.modules.uielements": "1.0.0"
-      },
-      "url": "https://packages.unity.com"
-    },
     "com.unity.mathematics": {
       "version": "1.2.5",
       "depth": 1,
@@ -152,15 +143,6 @@
         "com.unity.nuget.newtonsoft-json": "3.0.2"
       }
     },
-    "com.vrchat.clientsim": {
-      "version": "file:com.vrchat.clientsim",
-      "depth": 0,
-      "source": "embedded",
-      "dependencies": {
-        "com.unity.xr.oculus.standalone": "2.38.4",
-        "com.unity.inputsystem": "1.2.0"
-      }
-    },
     "com.vrchat.core.bootstrap": {
       "version": "file:com.vrchat.core.bootstrap",
       "depth": 0,
@@ -204,7 +186,7 @@
       "depth": 0,
       "source": "embedded",
       "dependencies": {
-        "com.vrcstuff.common": "0.1.0"
+        "com.unity.textmeshpro": "2.1.0"
       }
     },
     "com.unity.modules.ai": {
