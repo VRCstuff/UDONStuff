@@ -197,14 +197,17 @@
       "version": "file:com.vrcstuff.common",
       "depth": 0,
       "source": "embedded",
-      "dependencies": {}
+      "dependencies": {
+        "com.vrchat.udonsharp": "1.1.8",
+        "com.vrchat.worlds": "3.2.1"
+      }
     },
     "com.vrcstuff.controls": {
       "version": "file:com.vrcstuff.controls",
       "depth": 0,
       "source": "embedded",
       "dependencies": {
-        "com.vrcstuff.common": "0.1.0"
+        "com.unity.textmeshpro": "2.1.0"
       }
     },
     "com.unity.modules.ai": {
