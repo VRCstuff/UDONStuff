@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c333ccfdd0cbdbc4ca30cef2dd6e6b9b, type: 3}
   m_Name: DialAutoOff
   m_EditorClassIdentifier: 
-  serializedUdonProgramAsset: {fileID: 11400000, guid: 02f9c47bf9bee0a4d84b48b743d2b0b3,
+  serializedUdonProgramAsset: {fileID: 11400000, guid: 32f675a885686e0428e1fbb1f3587766,
     type: 2}
   udonAssembly: 
   assemblyError: 
@@ -21,7 +21,7 @@ MonoBehaviour:
   compiledVersion: 2
   behaviourSyncMode: 1
   hasInteractEvent: 0
-  scriptID: 7738547041872678043
+  scriptID: -1426315625502616238
   serializationData:
     SerializedFormat: 2
     SerializedBytes: 
@@ -62,7 +62,7 @@ MonoBehaviour:
       Data: 3|System.RuntimeType, mscorlib
     - Name: 
       Entry: 1
-      Data: TummyTime.Dial.Dial, Assembly-CSharp
+      Data: com.vrcstuff.controls.Dial.Dial, com.vrcstuff.controls
     - Name: 
       Entry: 8
       Data: 

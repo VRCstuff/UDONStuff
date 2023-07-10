@@ -19,14 +19,17 @@ namespace com.vrcstuff.controls.Dial
         public GameObject knobVR;
         public GameObject knobPC;
         [Header("Audio")]
+        [Tooltip("The default sound soource for this Dial. If you specify a shared source below this audio source will not be used")]
+        public AudioSource mySoundSource;
         /// <summary>
         /// If you declare this. It will play the sound on a shared sound source. This is only a game object with a sound source attached to it that will move.
         /// </summary>
         [Tooltip("If you declare this. It will play the sound on the shared speaker.")]
-        public GameObject sharedSoundObject;
+        public AudioSource sharedSoundSource;
         [SerializeField] private AudioClip KnobSoundClip;
         public float soundVolume = 0.5f;
-        [SerializeField] private float lowestPitch = 0.95f, highestPitch = 1.05f;
+        [SerializeField, Range(0.7f, 1.2f)] 
+        private float lowestPitch = 0.95f, highestPitch = 1.05f;
 
         [Tooltip("Reference to an object that represents each position on the Dial")]
         public GameObject newPositionMarker;
@@ -116,6 +119,9 @@ namespace com.vrcstuff.controls.Dial
             activeKnob = knobPC;
             knobPC.SetActive(true);
             knobVR.SetActive(false);
+
+            if (mySoundSource == null)
+                mySoundSource = GetComponent<AudioSource>();
 
             // Grab where the knob current is so we can fix it there
             basePos = activeKnob.transform.localPosition;
@@ -298,8 +304,13 @@ namespace com.vrcstuff.controls.Dial
 
                         // Play the sound if we can
                         if (canPlaySound)
-                            Utils.PlaySound(this, KnobSoundClip, sharedSoundObject, .96f, 1.04f);
-                            
+                        {
+                            if (sharedSoundSource != null)
+                                sharedSoundSource.PlaySound(KnobSoundClip, transform.position, lowestPitch, highestPitch);
+                            else if(mySoundSource != null)
+                                mySoundSource.PlaySound(KnobSoundClip, Vector3.zero, lowestPitch, highestPitch);
+                        }
+
 
                         // Vibrate the controller for each click round
                         Networking.LocalPlayer.PlayHapticEventInHand(currentHand, 0.2f, 1f, 1f);
@@ -362,7 +373,10 @@ namespace com.vrcstuff.controls.Dial
                 UpdateUdonBehaviours(0, 0);
             }
 
-            Utils.PlaySound(this, KnobSoundClip, sharedSoundObject, .96f, 1.04f);
+            if (sharedSoundSource != null)
+                sharedSoundSource.PlaySound(KnobSoundClip, transform.position, lowestPitch, highestPitch);
+            else if (mySoundSource != null)
+                mySoundSource.PlaySound(KnobSoundClip, Vector3.zero, lowestPitch, highestPitch);
 
             // Tell other players to sync the Dial position
             if (syncDialPosition)
@@ -380,7 +394,12 @@ namespace com.vrcstuff.controls.Dial
                 bool changedPosition = SetDialPosition(GetCurrentPosition());
 
                 if (!firstSync && syncDialClick && changedPosition)
-                    Utils.PlaySound(this, KnobSoundClip, sharedSoundObject, .96f, 1.04f);
+                {
+                    if (sharedSoundSource != null)
+                        sharedSoundSource.PlaySound(KnobSoundClip, transform.position, lowestPitch, highestPitch);
+                    else if (mySoundSource != null)
+                        mySoundSource.PlaySound(KnobSoundClip, Vector3.zero, lowestPitch, highestPitch);
+                }
 
                 firstSync = false;
             }
@@ -423,7 +442,12 @@ namespace com.vrcstuff.controls.Dial
                 canPlaySound = true;
 
             if (canPlaySound)
-                Utils.PlaySound(this, KnobSoundClip, sharedSoundObject, .96f, 1.04f);
+            {
+                if (sharedSoundSource != null)
+                    sharedSoundSource.PlaySound(KnobSoundClip, transform.position, lowestPitch, highestPitch);
+                else if (mySoundSource != null)
+                    mySoundSource.PlaySound(KnobSoundClip, Vector3.zero, lowestPitch, highestPitch);
+            }
         }
 
         /// <summary>
@@ -492,7 +516,7 @@ namespace com.vrcstuff.controls.Dial
         public void UpdateVolume() // I don't think we need this one anymore.
         {
             //Utils.UpdateSoundSourceVolume(this, sharedSoundObject, soundVolume);
-            
+
         }
 
         /// <summary>

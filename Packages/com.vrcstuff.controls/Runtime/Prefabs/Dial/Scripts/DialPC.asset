@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c333ccfdd0cbdbc4ca30cef2dd6e6b9b, type: 3}
   m_Name: DialPC
   m_EditorClassIdentifier: 
-  serializedUdonProgramAsset: {fileID: 11400000, guid: 8471656694a70054398ff6f771000e1b,
+  serializedUdonProgramAsset: {fileID: 11400000, guid: 67077f37632e18b4e9f395642a701a25,
     type: 2}
   udonAssembly: 
   assemblyError: 
@@ -21,7 +21,7 @@ MonoBehaviour:
   compiledVersion: 2
   behaviourSyncMode: 1
   hasInteractEvent: 1
-  scriptID: 3417480350279145503
+  scriptID: -3675920824067752927
   serializationData:
     SerializedFormat: 2
     SerializedBytes: 
@@ -62,7 +62,7 @@ MonoBehaviour:
       Data: 3|System.RuntimeType, mscorlib
     - Name: 
       Entry: 1
-      Data: TummyTime.Dial.Dial, Assembly-CSharp
+      Data: com.vrcstuff.controls.Dial.Dial, com.vrcstuff.controls
     - Name: 
       Entry: 8
       Data: 

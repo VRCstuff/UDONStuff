@@ -31,7 +31,7 @@ namespace com.vrcstuff.controls.wheel
 
         [SerializeField] private AudioSource myAudioSource;
         [SerializeField] private AudioSource sharedAudioSource;
-        [SerializeField] private float lowestPitch = 0.9f, highestPitch = 1.1f;
+        [SerializeField, Range(0.7f, 1.2f)] private float lowestPitch = 0.9f, highestPitch = 1.1f;
         public float soundVolume = 0.5f;
 
         [Header("Settings")]
@@ -417,9 +417,9 @@ namespace com.vrcstuff.controls.wheel
         public void PlayCrankSound()
         {
             if (sharedAudioSource != null)
-                sharedAudioSource.PlaySound(crankAudioClip, this.transform.position, .96f, 1.04f);
+                sharedAudioSource.PlaySound(crankAudioClip, this.transform.position, lowestPitch, highestPitch);
             else if (myAudioSource != null)
-                myAudioSource.PlaySound(crankAudioClip, Vector3.zero, .96f, 1.04f);
+                myAudioSource.PlaySound(crankAudioClip, Vector3.zero, lowestPitch, highestPitch);
         }
 
         /// <summary>
@@ -474,9 +474,9 @@ namespace com.vrcstuff.controls.wheel
         public void PlaySnapSound()
         {
             if (sharedAudioSource != null)
-                sharedAudioSource.PlaySound(wheelLeverSnapAudioClip, transform.position, .96f, 1.04f);
+                sharedAudioSource.PlaySound(wheelLeverSnapAudioClip, transform.position, lowestPitch, highestPitch);
             else if (myAudioSource != null)
-                myAudioSource.PlaySound(wheelLeverSnapAudioClip, Vector3.zero, .96f, 1.04f);
+                myAudioSource.PlaySound(wheelLeverSnapAudioClip, Vector3.zero, lowestPitch, highestPitch);
         }
     }
 }
