@@ -140,12 +140,18 @@ namespace com.vrcstuff.controls.Dial
                 syncedCurrentPosition = currentPosition;
 
             // Setup the current state of the collider
-            DrawDialPositions();
+            //DrawDialPositions();
         }
 
         public int GetCurrentPosition()
         {
             return syncDialPosition ? syncedCurrentPosition : currentPosition;
+        }
+
+        [ExecuteInEditMode]
+        public void _RefreshDialInEditor()
+        {
+            DrawDialPositions();
         }
 
         private void DrawDialPositions()
@@ -154,9 +160,15 @@ namespace com.vrcstuff.controls.Dial
             if (newPositionMarker != null)
                 newPositionMarker.SetActive(true);
 
+
+#if UNITY_EDITOR
+            for (int i = newPositionMarker.transform.parent.childCount - 1; i >= 1; i--)
+                Object.DestroyImmediate(newPositionMarker.transform.parent.GetChild(i).gameObject);
+#else
             // Clean up old lines
-            for (int i = 1; i < newPositionMarker.transform.parent.childCount; i++)
+            for (int i = newPositionMarker.transform.parent.childCount - 1; i >= 1; i--)
                 Object.Destroy(newPositionMarker.transform.parent.GetChild(i).gameObject);
+#endif
 
             if (numberOfPositions == 0)
             {

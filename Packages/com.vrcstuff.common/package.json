@@ -11,11 +11,11 @@
     "url": "https://github.com/VRCstuff/UDONStuff"
   },
   "vpmDependencies": {
-    "com.vrchat.udonsharp": "1.1.8"
+    "com.vrchat.udonsharp": "^1.1.x"
   },
   "type": "library",
   "dependencies": {
-    "com.vrchat.udonsharp": "1.1.8",
-    "com.vrchat.worlds": "3.2.1"
+    "com.vrchat.udonsharp": "^1.1.x",
+    "com.vrchat.worlds": "^3.1.x"
   }
 }

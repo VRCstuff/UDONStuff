@@ -1,5 +1,11 @@
 {
   "dependencies": {
+    "com.cyan.playerobjectpool": {
+      "version": "file:com.cyan.playerobjectpool",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {}
+    },
     "com.unity.burst": {
       "version": "1.4.11",
       "depth": 1,
@@ -142,6 +148,12 @@
       "dependencies": {},
       "url": "https://packages.unity.com"
     },
+    "com.varneon.vudon.array-extensions": {
+      "version": "file:com.varneon.vudon.array-extensions",
+      "depth": 0,
+      "source": "embedded",
+      "dependencies": {}
+    },
     "com.vrchat.base": {
       "version": "file:com.vrchat.base",
       "depth": 0,
@@ -207,7 +219,9 @@
       "depth": 0,
       "source": "embedded",
       "dependencies": {
-        "com.unity.textmeshpro": "2.1.0"
+        "com.unity.textmeshpro": "2.1.0",
+        "com.vrchat.worlds": "3.2.1",
+        "com.vrchat.udonsharp": "1.1.8"
       }
     },
     "com.unity.modules.ai": {
