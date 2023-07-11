@@ -14,12 +14,6 @@
     },
     "com.vrchat.udonsharp": {
       "version": "^1.1.x"
-    },
-    "com.cyan.playerobjectpool": {
-      "version": "^1.1.x"
-    },
-    "com.varneon.vudon.array-extensions": {
-      "version": "^0.3.x"
     }
   },
   "locked": {
@@ -47,19 +41,6 @@
       "version": "1.1.8",
       "dependencies": {
         "com.vrchat.worlds": "^3.1.x"
-      }
-    },
-    "com.cyan.playerobjectpool": {
-      "version": "1.1.2",
-      "dependencies": {
-        "com.vrchat.worlds": "^3.1.x",
-        "com.vrchat.udonsharp": "^1.1.x"
-      }
-    },
-    "com.varneon.vudon.array-extensions": {
-      "version": "0.3.0",
-      "dependencies": {
-        "com.vrchat.udonsharp": "1.x.x"
       }
     }
   }
