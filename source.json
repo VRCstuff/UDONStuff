@@ -23,7 +23,7 @@
         {
             "name":"com.vrcstuff.controls",
             "releases":[
-                "https://github.com/VRCstuff/UDONStuff/releases/download/0.1.1/com.vrcstuff.controls-0.1.2.zip",
+                "https://github.com/VRCstuff/UDONStuff/releases/download/0.1.2/com.vrcstuff.controls-0.1.2.zip",
                 "https://github.com/VRCstuff/UDONStuff/releases/download/0.1.1/com.vrcstuff.controls-0.1.1.zip",
                 "https://github.com/VRCstuff/UDONStuff/releases/download/0.1.0/com.vrcstuff.controls-0.1.0.zip"
             ]
