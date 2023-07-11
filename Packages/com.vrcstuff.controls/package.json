@@ -16,7 +16,7 @@
     "com.vrchat.udonsharp": "1.1.8"
   },
   "vpmDependencies": {
-    "com.vrcstuff.common": "0.1.0"
+    "com.vrcstuff.common": "0.1.1"
   },
   "type": "library"
 }
