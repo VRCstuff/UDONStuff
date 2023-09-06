@@ -42,17 +42,6 @@ namespace com.vrcstuff.controls.Dial
             if (autoOffCollider == null)
                 autoOffCollider = GetComponent<BoxCollider>();
 
-            if (autoOffCollider.gameObject == this.gameObject)
-            {
-                this.enabled = false;
-            }
-        }
-
-        private void Update()
-        {
-            if (Networking.LocalPlayer == null || !Networking.LocalPlayer.IsValid())
-                return;
-
             if (controller != null && controller.syncDialPosition)
             {
                 this.gameObject.SetActive(false);
@@ -60,38 +49,56 @@ namespace com.vrcstuff.controls.Dial
                 return;
             }
 
-            if (autoOffCheckDelay > 0f)
+            if (autoOffCollider.gameObject == this.gameObject)
             {
-                if (autoOffCollider != null)
-                {
-                    timeSinceLastLocationCheck += Time.deltaTime;
-
-                    if (timeSinceLastLocationCheck > autoOffCheckDelay)
-                    {
-                        int playerInside = autoOffCollider.bounds.Contains(Networking.LocalPlayer.GetPosition()) ? 1 : 0;
-
-                        if (this.playerInside != playerInside)
-                        {
-                            this.OnPlayerStateChange(Networking.LocalPlayer, playerInside == 1);
-
-                            this.playerInside = playerInside;
-                        }
-
-                        timeSinceLastLocationCheck = 0;
-                    }
-                }
+                return;
             }
+
+            if (autoOffCollider != null)
+            {
+                SendCustomEventDelayedSeconds(nameof(_CheckColliderState), autoOffCheckDelay);
+            }
+        }
+
+        public void _CheckColliderState()
+        {
+            if (autoOffCollider == null)
+                return;
+
+            if (Networking.LocalPlayer == null || !Networking.LocalPlayer.IsValid())
+            {
+                SendCustomEventDelayedSeconds(nameof(_CheckColliderState), autoOffCheckDelay);
+                return;
+            }
+
+            timeSinceLastLocationCheck += Time.deltaTime;
+
+            if (timeSinceLastLocationCheck > autoOffCheckDelay)
+            {
+                int playerInside = autoOffCollider.bounds.Contains(Networking.LocalPlayer.GetPosition()) ? 1 : 0;
+
+                if (this.playerInside != playerInside)
+                {
+                    this.OnPlayerStateChange(Networking.LocalPlayer, playerInside == 1);
+
+                    this.playerInside = playerInside;
+                }
+
+                timeSinceLastLocationCheck = 0;
+            }
+
+            SendCustomEventDelayedSeconds(nameof(_CheckColliderState), autoOffCheckDelay);
         }
 
         public override void OnPlayerTriggerEnter(VRCPlayerApi player)
         {
-            if (player == Networking.LocalPlayer)
+            if (player == Networking.LocalPlayer && autoOffCollider == null)
                 this.OnPlayerStateChange(player, true);
         }
 
         public override void OnPlayerTriggerExit(VRCPlayerApi player)
         {
-            if (player == Networking.LocalPlayer)
+            if (player == Networking.LocalPlayer && autoOffCollider == null)
                 this.OnPlayerStateChange(player, false);
         }
 

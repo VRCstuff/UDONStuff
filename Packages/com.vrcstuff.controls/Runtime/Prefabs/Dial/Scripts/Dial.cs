@@ -141,6 +141,20 @@ namespace com.vrcstuff.controls.Dial
 
             // Setup the current state of the collider
             //DrawDialPositions();
+
+            if (numberOfPositions == 0)
+            {
+                angleSpacing = 0;
+                positionSpacing = 0;
+                snapToClosestPosition = false;
+            }
+            else
+            {
+                angleSpacing = 360f / (numberOfPositions * 2);
+                positionSpacing = (360f / numberOfPositions);
+            }
+
+            SetDialPosition(GetCurrentPosition());
         }
 
         public int GetCurrentPosition()

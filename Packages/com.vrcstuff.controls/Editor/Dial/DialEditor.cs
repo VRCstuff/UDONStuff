@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿#if UNITY_EDITOR
+using UnityEngine;
 using System.Collections;
 using UnityEditor;
 using com.vrcstuff.controls.Dial;
@@ -18,3 +19,4 @@ public class ObjectBuilderEditor : Editor
         }
     }
 }
+#endif
