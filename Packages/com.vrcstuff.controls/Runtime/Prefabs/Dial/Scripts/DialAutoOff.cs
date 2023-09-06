@@ -30,8 +30,6 @@ namespace com.vrcstuff.controls.Dial
         int currentDialPosition = 0;
 
         int playerInside = -1;
-
-        float timeSinceLastLocationCheck = 0f;
         #endregion
 
         void Start()
@@ -71,20 +69,13 @@ namespace com.vrcstuff.controls.Dial
                 return;
             }
 
-            timeSinceLastLocationCheck += Time.deltaTime;
+            int playerInside = autoOffCollider.bounds.Contains(Networking.LocalPlayer.GetPosition()) ? 1 : 0;
 
-            if (timeSinceLastLocationCheck > autoOffCheckDelay)
+            if (this.playerInside != playerInside)
             {
-                int playerInside = autoOffCollider.bounds.Contains(Networking.LocalPlayer.GetPosition()) ? 1 : 0;
+                this.OnPlayerStateChange(Networking.LocalPlayer, playerInside == 1);
 
-                if (this.playerInside != playerInside)
-                {
-                    this.OnPlayerStateChange(Networking.LocalPlayer, playerInside == 1);
-
-                    this.playerInside = playerInside;
-                }
-
-                timeSinceLastLocationCheck = 0;
+                this.playerInside = playerInside;
             }
 
             SendCustomEventDelayedSeconds(nameof(_CheckColliderState), autoOffCheckDelay);
