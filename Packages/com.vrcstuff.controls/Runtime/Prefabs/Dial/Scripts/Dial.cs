@@ -87,10 +87,6 @@ namespace com.vrcstuff.controls.Dial
         /// </summary>
         private Vector3 basePos;
 
-        /// <summary>
-        /// Stores whether the dial has checked if the player is in VR or not yet
-        /// </summary>
-        private bool initVR;
         private float angleSpacing;
         private float positionSpacing;
 
@@ -114,8 +110,6 @@ namespace com.vrcstuff.controls.Dial
 
         private void Start()
         {
-            // initVR checks if the script have checked for VR
-            initVR = false;
             activeKnob = knobPC;
             knobPC.SetActive(true);
             knobVR.SetActive(false);
@@ -155,6 +149,8 @@ namespace com.vrcstuff.controls.Dial
             }
 
             SetDialPosition(GetCurrentPosition());
+
+            CheckIfUserInVR();
         }
 
         public int GetCurrentPosition()
@@ -270,79 +266,82 @@ namespace com.vrcstuff.controls.Dial
                 newPositionMarker.SetActive(false);
         }
 
-        void Update()
+        public void CheckIfUserInVR()
         {
-            // Update Dial Positions if the number of positions has changed
-            if (newPositionMarker != null && newPositionMarker.transform.parent.childCount != numberOfPositions + 1)
-                DrawDialPositions();
-
-            if (!initVR)
+            if (!Utils.LocalPlayerIsValid())
             {
-                if (Utils.LocalPlayerIsValid())
-                {
-                    if (Networking.LocalPlayer.IsUserInVR())
-                    {
-                        initVR = true;
-                        activeKnob = knobVR;
-                        knobPC.SetActive(false);
-                        knobVR.SetActive(true);
-
-                        // Sync VR Dial position
-                        SetDialPosition(GetCurrentPosition());
-                    }
-                }
+                SendCustomEventDelayedSeconds(nameof(CheckIfUserInVR), .1f);
+                return;
             }
 
+            if (Networking.LocalPlayer.IsUserInVR())
+            {
+                activeKnob = knobVR;
+                knobPC.SetActive(false);
+                knobVR.SetActive(true);
+            }
+            else
+            {
+                activeKnob = knobPC;
+                knobPC.SetActive(true);
+                knobVR.SetActive(false);
+            }
+
+            // Sync VR Dial position
+            SetDialPosition(GetCurrentPosition());
+        }
+
+        public void PlayerIsHoldingVRDial()
+        {
+            // Either this will work or we need to turn the mesh renderer off on the VR Dial and enable to PC Dial and snap that between positions
             SetDialAngle(activeKnob.transform.localEulerAngles.z);
 
-            // Either this will work or we need to turn the mesh renderer off on the VR Dial and enable to PC Dial and snap that between positions
-            if (initVR)
+            if (smoothTurning)
             {
-                if (smoothTurning)
+                /* if (currentHand != VRC_Pickup.PickupHand.None)
+                 {
+                     // If player has rotated the dial enough, run a small vibration
+                     var relRot = Mathf.Abs(this.lastTrackedRot - activeKnob.transform.localEulerAngles.z);
+                     if (relRot > 1.8f)
+                         Networking.LocalPlayer.PlayHapticEventInHand(currentHand, 0.1f, 0.9f, 0.9f);
+                     // TODO: check if we crossed a position and do a bigger vibration
+                 }
+
+                 lastTrackedRot = activeKnob.transform.localEulerAngles.z;*/
+            }
+            else
+            {
+                // If we snap to a new position vibrate controller
+                int oldPosition = GetCurrentPosition();
+
+                // Snap the dial to the nearest position
+                SnapDialToNearestPosition();
+
+                // If the dial actually changed positions
+                if (GetCurrentPosition() != oldPosition)
                 {
-                    /* if (currentHand != VRC_Pickup.PickupHand.None)
-                     {
-                         // If player has rotated the dial enough, run a small vibration
-                         var relRot = Mathf.Abs(this.lastTrackedRot - activeKnob.transform.localEulerAngles.z);
-                         if (relRot > 1.8f)
-                             Networking.LocalPlayer.PlayHapticEventInHand(currentHand, 0.1f, 0.9f, 0.9f);
-                         // TODO: check if we crossed a position and do a bigger vibration
-                     }
+                    bool canPlaySound = false;
 
-                     lastTrackedRot = activeKnob.transform.localEulerAngles.z;*/
-                }
-                else
-                {
-                    // If we snap to a new position vibrate controller
-                    int oldPosition = GetCurrentPosition();
+                    // Can play click sound if smooth turning is off and player is still holding the dial
+                    if (!smoothTurning && currentHand != VRC_Pickup.PickupHand.None)
+                        canPlaySound = true;
 
-                    // Snap the dial to the nearest position
-                    SnapDialToNearestPosition();
-
-                    // If the dial actually changed positions
-                    if (GetCurrentPosition() != oldPosition)
+                    // Play the sound if we can
+                    if (canPlaySound)
                     {
-                        bool canPlaySound = false;
-
-                        // Can play click sound if smooth turning is off and player is still holding the dial
-                        if (!smoothTurning && currentHand != VRC_Pickup.PickupHand.None)
-                            canPlaySound = true;
-
-                        // Play the sound if we can
-                        if (canPlaySound)
-                        {
-                            if (sharedSoundSource != null)
-                                sharedSoundSource.PlaySound(KnobSoundClip, transform.position, lowestPitch, highestPitch);
-                            else if(mySoundSource != null)
-                                mySoundSource.PlaySound(KnobSoundClip, Vector3.zero, lowestPitch, highestPitch);
-                        }
-
-
-                        // Vibrate the controller for each click round
-                        Networking.LocalPlayer.PlayHapticEventInHand(currentHand, 0.2f, 1f, 1f);
+                        if (sharedSoundSource != null)
+                            sharedSoundSource.PlaySound(KnobSoundClip, transform.position, lowestPitch, highestPitch);
+                        else if (mySoundSource != null)
+                            mySoundSource.PlaySound(KnobSoundClip, Vector3.zero, lowestPitch, highestPitch);
                     }
+
+                    // Vibrate the controller for each click round
+                    Networking.LocalPlayer.PlayHapticEventInHand(currentHand, 0.2f, 1f, 1f);
                 }
             }
+
+            if (currentHand != VRC_Pickup.PickupHand.None)
+                SendCustomEventDelayedFrames(nameof(PlayerIsHoldingVRDial), 0);
         }
 
         /// <summary>
@@ -362,6 +361,8 @@ namespace com.vrcstuff.controls.Dial
                 currentHand = VRC_Pickup.PickupHand.Right;
             else
                 currentHand = VRC_Pickup.PickupHand.None;
+
+            PlayerIsHoldingVRDial();
         }
 
         /// <summary>
@@ -383,6 +384,8 @@ namespace com.vrcstuff.controls.Dial
                 Utils.SetOwner(Networking.LocalPlayer, gameObject);
                 RequestSerialization();
             }
+
+            SetDialAngle(activeKnob.transform.localEulerAngles.z);
         }
 
         public void DesktopInteract()
