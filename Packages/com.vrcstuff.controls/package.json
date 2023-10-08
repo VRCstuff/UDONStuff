@@ -1,7 +1,7 @@
 {
   "name": "com.vrcstuff.controls",
   "displayName": "UDONStuff Controls",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "unity": "2019.4",
   "description": "Prefabs for controls in worlds",
   "vrchatVersion": "2022.1.1",
@@ -12,8 +12,7 @@
   },
   "dependencies": {
     "com.unity.textmeshpro": "^2.1.x",
-    "com.vrchat.worlds": "^3.1.x",
-    "com.vrchat.udonsharp": "^1.1.x"
+    "com.vrchat.worlds": "^3.4.x"
   },
   "vpmDependencies": {
     "com.vrcstuff.common": "^0.1.1"
