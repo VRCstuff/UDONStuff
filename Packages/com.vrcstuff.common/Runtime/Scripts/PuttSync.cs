@@ -448,8 +448,11 @@ namespace com.vrcstuff.udon
             if (objectRB != null)
             {
                 objectRB.Sleep();
-                objectRB.velocity = Vector3.zero;
-                objectRB.angularVelocity = Vector3.zero;
+                if (objectRB.isKinematic == false)
+                {
+                    objectRB.velocity = Vector3.zero;
+                    objectRB.angularVelocity = Vector3.zero;
+                }
             }
 
             transform.position = originalPosition;
