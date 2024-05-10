@@ -160,8 +160,11 @@ namespace com.vrcstuff.controls.wheel
         {
             if (grabTargetRB != null)
             {
-                grabTargetRB.velocity = Vector3.zero;
-                grabTargetRB.angularVelocity = Vector3.zero;
+                if (grabTargetRB.isKinematic == false)
+                {
+                    grabTargetRB.velocity = Vector3.zero;
+                    grabTargetRB.angularVelocity = Vector3.zero;
+                }
                 grabTargetRB.isKinematic = true;
             }
             grabTarget.transform.position = grabResetTarget.transform.position;
