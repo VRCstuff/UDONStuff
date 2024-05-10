@@ -5,20 +5,22 @@ using VRC.SDKBase;
 
 namespace com.vrcstuff.udon
 {
-    /// <summary>
-    /// PuttSync is a semi-replacement for the ObjectSync component. Made as an experiment to figure out how ObjectSync works and to give a bit extra control over how it works. See: https://github.com/mikeee324/OpenPutt<br/>
-    /// <b>Be careful overusing this script! It's not great at handling large amounts of objects/players - can cause people to time out. (Unsure if it is this script that causes it but it's most likely)</b>
-    /// </summary>
     [UdonBehaviourSyncMode(BehaviourSyncMode.Manual), DefaultExecutionOrder(999)]
     public class PuttSync : UdonSharpBehaviour
     {
         #region Public Settings
         [Header("Sync Settings")]
         [Range(0, 1f), Tooltip("How long the object should keep syncing fast for after requesting a fast sync")]
-        public float fastSyncTimeout = 0.5f;
+        public float fastSyncTimeout = 0.25f;
 
         [Tooltip("This lets you define a curve to scale back the speed of fast updates based on the number on players in the instance. You can leave this empty and a default curve will be applied when the game loads")]
         public AnimationCurve fastSyncIntervalCurve;
+
+        [Tooltip("This defines how often this often will be updated for remote players (in seconds) based on how far away they are from this GameObject. You can leave this empty and a default curve will be applied when the game loads")]
+        public AnimationCurve remoteUpdateDistanceCurve;
+
+        [Range(0.001f, 0.05f), Tooltip("Approximately the time it will take to catch up with the position of remote objects. A smaller value will reach the target faster.")]
+        public float remoteUpdateSmoothTime = 0.02f;
 
         [Tooltip("Experimental - Reduces network traffic by syncing")]
         public bool disableSyncWhileHeld = true;
@@ -100,6 +102,10 @@ namespace com.vrcstuff.udon
         /// </summary>
         private bool extraDataChanged = false;
         private bool firstEnable = true;
+
+        private VRCPlayerApi localPlayer;
+        private float lastKnownDistanceUpdateValue = 0f;
+        private Vector3 lastSyncVelocity = Vector3.zero;
         #endregion
 
         void Start()
@@ -119,9 +125,18 @@ namespace com.vrcstuff.udon
             {
                 fastSyncIntervalCurve = new AnimationCurve();
                 fastSyncIntervalCurve.AddKey(0f, 0.03f);
-                fastSyncIntervalCurve.AddKey(20f, 0.05f);
-                fastSyncIntervalCurve.AddKey(40f, 0.1f);
-                fastSyncIntervalCurve.AddKey(82f, 0.3f);
+                fastSyncIntervalCurve.AddKey(10f, 0.03f);
+                fastSyncIntervalCurve.AddKey(20f, 0.1f);
+                fastSyncIntervalCurve.AddKey(82f, 1f);
+            }
+
+            if (remoteUpdateDistanceCurve == null || remoteUpdateDistanceCurve.length == 0)
+            {
+                remoteUpdateDistanceCurve = new AnimationCurve();
+                remoteUpdateDistanceCurve.AddKey(0f, 0);
+                remoteUpdateDistanceCurve.AddKey(30f, 0);
+                remoteUpdateDistanceCurve.AddKey(100f, 1f);
+                remoteUpdateDistanceCurve.AddKey(200f, 5f);
             }
 
             fastSyncInterval = fastSyncIntervalCurve.Evaluate(VRCPlayerApi.GetPlayerCount());
@@ -208,6 +223,8 @@ namespace com.vrcstuff.udon
                 // Attach this object to the players hand if they are currently holding it
                 if (disableSyncWhileHeld && currentOwnerHandInt != (int)VRCPickup.PickupHand.None)
                 {
+                    // TODO: This is a little bit jittery still - needs looking at eventually
+
                     // Get the world space position/rotation of the hand that is holding this object
                     HumanBodyBones currentTrackedBone = currentOwnerHand == VRCPickup.PickupHand.Left ? HumanBodyBones.LeftHand : HumanBodyBones.RightHand;
 
@@ -219,21 +236,28 @@ namespace com.vrcstuff.udon
 
                     Vector3 oldPos = transform.position;
 
-                    Vector3 newPos = handPosition + transform.TransformDirection(syncPosition);
+                    Vector3 newPosition = handPosition + transform.TransformDirection(syncPosition);
                     Quaternion newOffsetRot = handRotation * syncRotation;
-                    if ((currentOwnerHandOffset - syncPosition).magnitude > 0.1f)
-                        newPos = Vector3.Lerp(oldPos, handPosition + transform.TransformDirection(syncPosition), 1.0f - Mathf.Pow(0.000001f, Time.deltaTime));
 
-                    if (Quaternion.Angle(transform.rotation, syncRotation) > 1f)
+                    if (localPlayer != null)
+                        lastKnownDistanceUpdateValue = remoteUpdateDistanceCurve.Evaluate(Vector3.Distance(newPosition, localPlayer.GetPosition()));
+
+                    if (lastKnownDistanceUpdateValue == 0f)
                     {
-                        float lerpProgress = 1.0f - Mathf.Pow(0.000001f, Time.deltaTime);
-                        newOffsetRot = Quaternion.Slerp(transform.rotation, newOffsetRot, lerpProgress);
+                        if ((currentOwnerHandOffset - syncPosition).magnitude > 0.1f)
+                            newPosition = Vector3.SmoothDamp(oldPos, newPosition, ref lastSyncVelocity, remoteUpdateSmoothTime);
+
+                        if (Quaternion.Angle(transform.rotation, syncRotation) > 1f)
+                        {
+                            float lerpProgress = 1.0f - Mathf.Pow(0.000001f, Time.deltaTime);
+                            newOffsetRot = Quaternion.Slerp(transform.rotation, newOffsetRot, lerpProgress);
+                        }
                     }
 
-                    transform.SetPositionAndRotation(newPos, newOffsetRot);
+                    transform.SetPositionAndRotation(newPosition, newOffsetRot);
 
                     // Run this for the next frame too
-                    SendCustomEventDelayedFrames(nameof(HandleRemoteUpdate), 0);
+                    SendCustomEventDelayedSeconds(nameof(HandleRemoteUpdate), lastKnownDistanceUpdateValue);
 
                     return;
                 }
@@ -242,13 +266,26 @@ namespace com.vrcstuff.udon
                     Vector3 newPosition = syncPosition;
                     Quaternion newRotation = syncRotation;
 
-                    if (!isFirstSync && hasSynced)
+                    Vector3 oldPos = transform.localPosition;
+
+                    if (localPlayer != null)
+                    {
+                        Transform t = transform.parent == null ? transform : transform.parent.transform;
+
+                        float distance = Vector3.Distance(t.TransformPoint(newPosition), localPlayer.GetPosition());
+
+                        lastKnownDistanceUpdateValue = remoteUpdateDistanceCurve.Evaluate(distance);
+                    }
+
+                    // If we're allowed to smooth the movement (If object is far away then we should just snap to where we last saw it)
+                    if (!isFirstSync && hasSynced && lastKnownDistanceUpdateValue == 0f)
                     {
                         // Try to smooth out the lerps
                         float lerpProgress = 1.0f - Mathf.Pow(0.001f, Time.deltaTime);
 
                         // Lerp the object to it's current position
-                        newPosition = Vector3.Lerp(transform.localPosition, syncPosition, lerpProgress);
+                        newPosition = Vector3.SmoothDamp(transform.localPosition, syncPosition, ref lastSyncVelocity, remoteUpdateSmoothTime);
+
                         newRotation = Quaternion.Slerp(transform.localRotation, syncRotation, lerpProgress);
                     }
 
@@ -257,7 +294,7 @@ namespace com.vrcstuff.udon
                     transform.localRotation = newRotation;
 
                     // Run this for the next frame too
-                    SendCustomEventDelayedFrames(nameof(HandleRemoteUpdate), 0);
+                    SendCustomEventDelayedSeconds(nameof(HandleRemoteUpdate), lastKnownDistanceUpdateValue);
 
                     return;
                 }
@@ -276,6 +313,10 @@ namespace com.vrcstuff.udon
             if (!isHandlingRemoteUpdates)
             {
                 isHandlingRemoteUpdates = true;
+
+                if (localPlayer == null && Utils.LocalPlayerIsValid())
+                    localPlayer = Networking.LocalPlayer;
+
                 HandleRemoteUpdate();
             }
 
@@ -448,7 +489,7 @@ namespace com.vrcstuff.udon
             if (objectRB != null)
             {
                 objectRB.Sleep();
-                if (objectRB.isKinematic == false)
+                if (!objectRB.isKinematic)
                 {
                     objectRB.velocity = Vector3.zero;
                     objectRB.angularVelocity = Vector3.zero;
