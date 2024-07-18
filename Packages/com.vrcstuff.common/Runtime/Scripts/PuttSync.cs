@@ -75,6 +75,7 @@ namespace com.vrcstuff.udon
             get => (VRCPickup.PickupHand)currentOwnerHandInt;
             set => currentOwnerHandInt = (int)value;
         }
+        public bool grabOriginalPosOnStart = true;
         #endregion
 
         #region Internal Working Vars
@@ -115,8 +116,11 @@ namespace com.vrcstuff.udon
             if (objectRB == null)
                 objectRB = GetComponent<Rigidbody>();
 
-            originalPosition = transform.position;
-            originalRotation = transform.rotation;
+            if (grabOriginalPosOnStart)
+            {
+                originalPosition = transform.position;
+                originalRotation = transform.rotation;
+            }
 
             syncPosition = transform.localPosition;
             syncRotation = transform.localRotation;
@@ -147,10 +151,19 @@ namespace com.vrcstuff.udon
         /// </summary>
         public void HandleSendSync()
         {
+            if (isHandlingRemoteUpdates)
+            {
+                fastSyncStopTime = -1;
+                return;
+            }
+
             // If the owner sees the object go underneath the respawn height
             if (autoRespawn && transform.position.y < autoRespawnHeight)
             {
                 // The master will respawn the object
+                if (originalPosition.y < autoRespawnHeight)
+                    originalPosition = new Vector3(originalPosition.x, autoRespawnHeight, originalPosition.z);
+
                 Respawn();
             }
 
@@ -213,8 +226,10 @@ namespace com.vrcstuff.udon
                 bool shouldDropPickup = false;
                 if (!newPickupState)
                     shouldDropPickup = true;
+                if (pickup.currentHand != VRCPickup.PickupHand.None)
+                    shouldDropPickup = true;
 
-                if (shouldDropPickup && pickup.currentHand != VRCPickup.PickupHand.None)
+                if (shouldDropPickup)
                     pickup.Drop();
             }
 
@@ -249,7 +264,7 @@ namespace com.vrcstuff.udon
 
                         if (Quaternion.Angle(transform.rotation, syncRotation) > 1f)
                         {
-                            float lerpProgress = 1.0f - Mathf.Pow(0.000001f, Time.deltaTime);
+                            float lerpProgress = 1.0f - Mathf.Pow(0.001f, Time.deltaTime);
                             newOffsetRot = Quaternion.Slerp(transform.rotation, newOffsetRot, lerpProgress);
                         }
                     }
@@ -393,12 +408,24 @@ namespace com.vrcstuff.udon
 
                 Utils.SetOwner(Networking.LocalPlayer, gameObject);
 
+                currentOwnerHand = VRC_Pickup.PickupHand.None;
+
                 syncPosition = Vector3.zero;
                 syncRotation = Quaternion.identity;
 
                 // Keep a track of which hand the player is holding the pickup in
                 UpdatePickupCurrentHand();
+
+                SendCustomEventDelayedSeconds(nameof(UpdatePickupHandOffsets), .3f);
+
+                SendCustomNetworkEvent(VRC.Udon.Common.Interfaces.NetworkEventTarget.All, nameof(ForceDrop));
             }
+        }
+
+        public void ForceDrop()
+        {
+            if (this.LocalPlayerOwnsThisObject()) return;
+            pickup.Drop();
         }
 
         public override void OnDrop()
@@ -486,6 +513,9 @@ namespace com.vrcstuff.udon
             if (pickup != null)
                 pickup.Drop();
 
+            transform.position = originalPosition;
+            transform.rotation = originalRotation;
+
             if (objectRB != null)
             {
                 objectRB.Sleep();
@@ -493,11 +523,11 @@ namespace com.vrcstuff.udon
                 {
                     objectRB.velocity = Vector3.zero;
                     objectRB.angularVelocity = Vector3.zero;
+
+                    objectRB.position = originalPosition;
+                    objectRB.rotation = originalRotation;
                 }
             }
-
-            transform.position = originalPosition;
-            transform.rotation = originalRotation;
 
             if (returnListener != null && remoteReturnFunction != null && remoteReturnFunction.Length > 0)
                 returnListener.SendCustomEvent(remoteReturnFunction);
