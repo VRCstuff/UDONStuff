@@ -114,6 +114,38 @@ namespace com.vrcstuff.udon
         /// </summary>
         /// <returns>Number of seconds since 2023-01-01 00:00:00 UTC</returns>
         public static float GetUnixTimestamp() => (float)(System.DateTime.UtcNow - new System.DateTime(2023, 1, 1, 0, 0, 0, System.DateTimeKind.Utc)).TotalSeconds;
+
+        /// <summary>
+        /// Gives you the local rotation velocity between this frame and the last.
+        /// </summary>
+        /// <returns>Vector3 containing the velocity since last frame.</returns>
+        /// <param name="currentPosition">This is the current position of the transform. You should pass in "transform.position" or similar here.</param>
+        /// <param name="previousPosition">The previous frames transform. Remember to save this frames rotation with "previousPosition = transform.position" or similar</param>
+        public static Vector3 CalculateVelocity(Vector3 currentPosition, Vector3 previousPosition)
+        {
+            // Calculate the displacement in world space
+            Vector3 displacement = currentPosition - previousPosition;
+            // Convert the displacement to local space
+            Vector3 localDisplacement = transform.InverseTransformDirection(displacement);
+            // Calculate the local velocity
+            Vector3 localVelocity = localDisplacement / Time.deltaTime;
+            //Return the velocity
+            return localVelocity;
+        }
+        /// <summary>
+        /// Gives you the local rotation velocity between this frame and the last.
+        /// </summary>
+        /// <returns>Vector3 containing the rotation velocity since last frame.</returns>
+        /// <param name="currentRotation">This is the current position of the transform. You should pass in "transform.rotation" here.</param>
+        /// <param name="previousRotation">The previous frames transform. Remember to save this frames rotation with "previousRotation = transform.rotation" or similar</param>
+        public static Vector3 CalculateRotationVelocity(Quaternion currentRotation, Quaternion previousRotation)
+        {
+            // Calculate the change in rotation
+            Quaternion deltaRotation = currentRotation * Quaternion.Inverse(previousRotation);
+            // Convert the change in rotation to angular velocity
+            deltaRotation.ToAngleAxis(out float angle, out Vector3 axis);
+            return Vector3 angularVelocity = axis * angle * Mathf.Deg2Rad / Time.deltaTime;
+        }
     }
 
     #region Extensions
