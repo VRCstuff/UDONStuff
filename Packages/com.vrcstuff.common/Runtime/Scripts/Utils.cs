@@ -116,24 +116,25 @@ namespace com.vrcstuff.udon
         public static float GetUnixTimestamp() => (float)(System.DateTime.UtcNow - new System.DateTime(2023, 1, 1, 0, 0, 0, System.DateTimeKind.Utc)).TotalSeconds;
 
         /// <summary>
-        /// Gives you the local rotation velocity between this frame and the last.
+        /// Gives you the local rotation velocity between this frame and the last. This is using world positions and not local positions.
         /// </summary>
         /// <returns>Vector3 containing the velocity since last frame.</returns>
-        /// <param name="currentPosition">This is the current position of the transform. You should pass in "transform.position" or similar here.</param>
+        /// <param name="objectTransform">This is the current position of the transform. You should pass in "transform" or similar here.</param>
         /// <param name="previousPosition">The previous frames transform. Remember to save this frames rotation with "previousPosition = transform.position" or similar</param>
-        public static Vector3 CalculateVelocity(Vector3 currentPosition, Vector3 previousPosition)
+        public static Vector3 CalculateVelocity(Transform objectTransform, Vector3 previousPosition)
         {
             // Calculate the displacement in world space
+            Vector3 currentPosition = objectTransform.position;
             Vector3 displacement = currentPosition - previousPosition;
             // Convert the displacement to local space
-            Vector3 localDisplacement = transform.InverseTransformDirection(displacement);
+            Vector3 localDisplacement = objectTransform.InverseTransformDirection(displacement);
             // Calculate the local velocity
             Vector3 localVelocity = localDisplacement / Time.deltaTime;
             //Return the velocity
             return localVelocity;
         }
         /// <summary>
-        /// Gives you the local rotation velocity between this frame and the last.
+        /// Gives you the local rotation velocity between this frame and the last. This is using world rotation and not local rotation.
         /// </summary>
         /// <returns>Vector3 containing the rotation velocity since last frame.</returns>
         /// <param name="currentRotation">This is the current position of the transform. You should pass in "transform.rotation" here.</param>
@@ -144,7 +145,8 @@ namespace com.vrcstuff.udon
             Quaternion deltaRotation = currentRotation * Quaternion.Inverse(previousRotation);
             // Convert the change in rotation to angular velocity
             deltaRotation.ToAngleAxis(out float angle, out Vector3 axis);
-            return Vector3 angularVelocity = axis * angle * Mathf.Deg2Rad / Time.deltaTime;
+            Vector3 angularVelocity = axis * angle * Mathf.Deg2Rad / Time.deltaTime;
+            return angularVelocity;
         }
     }
 
