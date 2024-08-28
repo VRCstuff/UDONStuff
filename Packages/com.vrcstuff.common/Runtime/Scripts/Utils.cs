@@ -291,6 +291,32 @@ namespace com.vrcstuff.udon
                 context.transform.position = moveToWorldPosition;
         }
     }
+
+    public static class GizmoExtensions
+    {
+        /// <summary>
+        /// This will add functionality to draw a arrow from the center of a transform in the forward direction.
+        /// </summary>
+        /// <param name="context">This is the transform you want to send the arrow from</param>
+        /// <param name="arrowLength">Length of the arrow</param>
+        /// <param name="arrowHeadLength">Length of the arrowhead</param>
+        /// <param name="arrowHeadAngle">Angle of the arrowhead</param>
+        public static void DrawForwardArrow(this UnityEngine.Transform context, float arrowLength = 1.2f, float arrowHeadLength = 0.2f, float arrowHeadAngle = 20f, Color? color = null)
+        {
+
+            Gizmos.color = color ?? Color.red;
+
+            Gizmos.DrawLine(context.position, (context.position + context.forward * arrowLength));
+            Vector3 right = Quaternion.LookRotation(context.forward) * Quaternion.Euler(0, 180 + arrowHeadAngle, 0) * Vector3.forward;
+            Vector3 left = Quaternion.LookRotation(context.forward) * Quaternion.Euler(0, 180 - arrowHeadAngle, 0) * Vector3.forward;
+
+            Gizmos.DrawLine(context.position + context.forward * arrowLength, context.position + context.forward * arrowLength + right * arrowHeadLength);
+            Gizmos.DrawLine(context.position + context.forward * arrowLength, context.position + context.forward * arrowLength + left * arrowHeadLength);
+            Gizmos.DrawLine((context.position + context.forward * arrowLength + left * arrowHeadLength), (context.position + context.forward * arrowLength + right * arrowHeadLength));
+
+        }
+    }
+
     #endregion
 
 
