@@ -148,6 +148,53 @@ namespace com.vrcstuff.udon
             Vector3 angularVelocity = axis * angle * Mathf.Deg2Rad / Time.deltaTime;
             return angularVelocity;
         }
+
+        /// <summary>
+        /// This function checks what connected player is closest to the given transform.
+        /// </summary>
+        /// <param name="targetTransform">This transform is what it's compared agains</param>
+        /// <returns>closest vrcplayer.</returns>
+        public static VRCPlayerApi GetClosestPlayer(Transform targetTransform)
+        {
+            VRCPlayerApi[] players = new VRCPlayerApi[100];
+            VRCPlayerApi closestPlayer = null;
+            float closestDistance = Mathf.Infinity;
+            VRCPlayerApi.GetPlayers(players);
+            foreach (VRCPlayerApi player in players)
+            {
+                if (player == null) continue; //Skip empty slots.
+                float distance = Vector3.Distance(player.GetPosition(), targetTransform.position); //Check the distance
+                if (distance < closestDistance) //Checks who is the closest
+                {
+                    closestDistance = distance;
+                    closestPlayer = player;
+                }
+            }
+            return closestPlayer;
+        }
+        /// <summary>
+        /// This function checks what connected player is closest to the given transform.
+        /// </summary>
+        /// <param name="targetPosition">This position is what it's compared agains</param>
+        /// <returns>closest vrcplayer.</returns>
+        public static VRCPlayerApi GetClosestPlayer(Vector3 targetPosition)
+        {
+            VRCPlayerApi[] players = new VRCPlayerApi[100];
+            VRCPlayerApi closestPlayer = null;
+            float closestDistance = Mathf.Infinity;
+            VRCPlayerApi.GetPlayers(players);
+            foreach (VRCPlayerApi player in players)
+            {
+                if (player == null) continue; //Skip empty slots.
+                float distance = Vector3.Distance(player.GetPosition(), targetPosition); //Check the distance
+                if (distance < closestDistance) //Checks who is the closest
+                {
+                    closestDistance = distance;
+                    closestPlayer = player;
+                }
+            }
+            return closestPlayer;
+        }
     }
 
     #region Extensions
