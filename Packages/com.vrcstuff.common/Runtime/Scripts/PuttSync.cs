@@ -204,7 +204,7 @@ namespace com.vrcstuff.udon
         /// </summary>
         public void HandleRemoteUpdate()
         {
-            VRCPlayerApi owner = Networking.GetOwner(gameObject);
+            var owner = Networking.GetOwner(gameObject);
             if (owner == Networking.LocalPlayer)
             {
                 isHandlingRemoteUpdates = false;
@@ -214,7 +214,7 @@ namespace com.vrcstuff.udon
             // Disable pickup for other players if theft is disabled
             if (canManagePickupable && pickup != null)
             {
-                bool newPickupState = true;
+                var newPickupState = true;
 
                 // If somebody else is holding this object disable pickup (when theft is disabled)
                 if (pickup.DisallowTheft && currentOwnerHandInt != (int)VRCPickup.PickupHand.None)
@@ -223,7 +223,7 @@ namespace com.vrcstuff.udon
                 if (newPickupState != pickup.pickupable)
                     pickup.pickupable = newPickupState;
 
-                bool shouldDropPickup = false;
+                var shouldDropPickup = false;
                 if (!newPickupState)
                     shouldDropPickup = true;
                 if (pickup.currentHand != VRCPickup.PickupHand.None)
@@ -241,18 +241,26 @@ namespace com.vrcstuff.udon
                     // TODO: This is a little bit jittery still - needs looking at eventually
 
                     // Get the world space position/rotation of the hand that is holding this object
-                    HumanBodyBones currentTrackedBone = currentOwnerHand == VRCPickup.PickupHand.Left ? HumanBodyBones.LeftHand : HumanBodyBones.RightHand;
+                    var currentTrackedBone = currentOwnerHand == VRCPickup.PickupHand.Left ? HumanBodyBones.LeftHand : HumanBodyBones.RightHand;
 
-                    Vector3 handPosition = owner.GetBonePosition(currentTrackedBone);
-                    Quaternion handRotation = owner.GetBoneRotation(currentTrackedBone);
+                    var handPosition = owner.GetBonePosition(currentTrackedBone);
+                    var handRotation = owner.GetBoneRotation(currentTrackedBone);
+                    
+                    if (owner.IsUserInVR())
+                    {
+                        var trackingData = owner.GetTrackingData(currentOwnerHand == VRCPickup.PickupHand.Left ? VRCPlayerApi.TrackingDataType.LeftHand : VRCPlayerApi.TrackingDataType.RightHand);
+
+                        handPosition = trackingData.position;
+                        handRotation = trackingData.rotation;
+                    }
 
                     // If the offset shave changed, try to lerp them?
-                    GetPickupHandOffsets(owner, out Vector3 currentOwnerHandOffset, out Quaternion currentOwnerHandOffsetRotation);
+                    GetPickupHandOffsets(owner, out var currentOwnerHandOffset, out var currentOwnerHandOffsetRotation);
 
-                    Vector3 oldPos = transform.position;
+                    var oldPos = transform.position;
 
-                    Vector3 newPosition = handPosition + transform.TransformDirection(syncPosition);
-                    Quaternion newOffsetRot = handRotation * syncRotation;
+                    var newPosition = handPosition + transform.TransformDirection(syncPosition);
+                    var newOffsetRot = handRotation * syncRotation;
 
                     if (localPlayer != null)
                         lastKnownDistanceUpdateValue = remoteUpdateDistanceCurve.Evaluate(Vector3.Distance(newPosition, localPlayer.GetPosition()));
@@ -264,7 +272,7 @@ namespace com.vrcstuff.udon
 
                         if (Quaternion.Angle(transform.rotation, syncRotation) > 1f)
                         {
-                            float lerpProgress = 1.0f - Mathf.Pow(0.001f, Time.deltaTime);
+                            var lerpProgress = 1.0f - Mathf.Pow(0.001f, Time.deltaTime);
                             newOffsetRot = Quaternion.Slerp(transform.rotation, newOffsetRot, lerpProgress);
                         }
                     }
@@ -278,16 +286,16 @@ namespace com.vrcstuff.udon
                 }
                 else if ((transform.localPosition - syncPosition).magnitude > 0.001f || Quaternion.Angle(transform.localRotation, syncRotation) > 0.01f)
                 {
-                    Vector3 newPosition = syncPosition;
-                    Quaternion newRotation = syncRotation;
+                    var newPosition = syncPosition;
+                    var newRotation = syncRotation;
 
-                    Vector3 oldPos = transform.localPosition;
+                    var oldPos = transform.localPosition;
 
                     if (localPlayer != null)
                     {
-                        Transform t = transform.parent == null ? transform : transform.parent.transform;
+                        var t = transform.parent == null ? transform : transform.parent.transform;
 
-                        float distance = Vector3.Distance(t.TransformPoint(newPosition), localPlayer.GetPosition());
+                        var distance = Vector3.Distance(t.TransformPoint(newPosition), localPlayer.GetPosition());
 
                         lastKnownDistanceUpdateValue = remoteUpdateDistanceCurve.Evaluate(distance);
                     }
@@ -296,7 +304,7 @@ namespace com.vrcstuff.udon
                     if (!isFirstSync && hasSynced && lastKnownDistanceUpdateValue == 0f)
                     {
                         // Try to smooth out the lerps
-                        float lerpProgress = 1.0f - Mathf.Pow(0.001f, Time.deltaTime);
+                        var lerpProgress = 1.0f - Mathf.Pow(0.001f, Time.deltaTime);
 
                         // Lerp the object to it's current position
                         newPosition = Vector3.SmoothDamp(transform.localPosition, syncPosition, ref lastSyncVelocity, remoteUpdateSmoothTime);
@@ -369,7 +377,7 @@ namespace com.vrcstuff.udon
             if (!this.LocalPlayerOwnsThisObject() || pickup == null)
                 return;
 
-            VRCPickup.PickupHand handStateThisFrame = pickup.currentHand;
+            var handStateThisFrame = pickup.currentHand;
             if (isBeingHeldByExternalScript)
                 handStateThisFrame = VRC_Pickup.PickupHand.Right;
 
@@ -394,7 +402,7 @@ namespace com.vrcstuff.udon
             {
                 returnAfterDropEndTime = -1;
 
-                bool shouldDropPickup = false;
+                var shouldDropPickup = false;
                 if (pickup.DisallowTheft && !this.LocalPlayerOwnsThisObject() && currentOwnerHandInt != (int)VRCPickup.PickupHand.None)
                     shouldDropPickup = true;
                 if (!pickup.pickupable)
@@ -579,8 +587,8 @@ namespace com.vrcstuff.udon
 
         public override void OnOwnershipTransferred(VRCPlayerApi player)
         {
-            bool localPlayerIsOwner = Networking.LocalPlayer == player;
-            bool isPickupable = Utils.LocalPlayerIsValid() && localPlayerIsOwner;
+            var localPlayerIsOwner = Networking.LocalPlayer == player;
+            var isPickupable = Utils.LocalPlayerIsValid() && localPlayerIsOwner;
             // Enable pickup for the owner
             if (canManagePickupable && pickup != null && !pickup.pickupable)
                 pickup.pickupable = isPickupable;
@@ -589,13 +597,13 @@ namespace com.vrcstuff.udon
         private void UpdatePickupHandOffsets()
         {
             // Cache old values so we can check for changes that need syncing
-            Vector3 oldOffset = syncPosition;
-            Quaternion oldRotationOffset = syncRotation;
+            var oldOffset = syncPosition;
+            var oldRotationOffset = syncRotation;
 
-            GetPickupHandOffsets(Networking.LocalPlayer, out Vector3 newOwnerHandOffset, out Quaternion newOwnerHandOffsetRotation);
+            GetPickupHandOffsets(Networking.LocalPlayer, out var newOwnerHandOffset, out var newOwnerHandOffsetRotation);
 
-            float offsetPosDiff = (oldOffset - newOwnerHandOffset).magnitude;
-            float offsetRotDiff = Quaternion.Angle(oldRotationOffset, newOwnerHandOffsetRotation);
+            var offsetPosDiff = (oldOffset - newOwnerHandOffset).magnitude;
+            var offsetRotDiff = Quaternion.Angle(oldRotationOffset, newOwnerHandOffsetRotation);
 
             this.syncPosition = newOwnerHandOffset;
             this.syncRotation = newOwnerHandOffsetRotation;
@@ -617,10 +625,18 @@ namespace com.vrcstuff.udon
                 return;
             }
 
-            HumanBodyBones currentTrackedBone = currentOwnerHand == VRCPickup.PickupHand.Left ? HumanBodyBones.LeftHand : HumanBodyBones.RightHand;
+            var currentTrackedBone = currentOwnerHand == VRCPickup.PickupHand.Left ? HumanBodyBones.LeftHand : HumanBodyBones.RightHand;
 
-            Vector3 handPosition = player.GetBonePosition(currentTrackedBone);
-            Quaternion handRotation = player.GetBoneRotation(currentTrackedBone);
+            var handPosition = player.GetBonePosition(currentTrackedBone);
+            var handRotation = player.GetBoneRotation(currentTrackedBone);
+
+            if (player.IsUserInVR())
+            {
+                var trackingData = player.GetTrackingData(currentOwnerHand == VRCPickup.PickupHand.Left ? VRCPlayerApi.TrackingDataType.LeftHand : VRCPlayerApi.TrackingDataType.RightHand);
+
+                handPosition = trackingData.position;
+                handRotation = trackingData.rotation;
+            }
 
             // Work out new offsets from the players hand
             posOffset = Vector3.Scale(-transform.InverseTransformPoint(handPosition), transform.localScale);

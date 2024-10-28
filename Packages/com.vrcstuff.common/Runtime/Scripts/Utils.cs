@@ -148,6 +148,47 @@ namespace com.vrcstuff.udon
             Vector3 angularVelocity = axis * angle * Mathf.Deg2Rad / Time.deltaTime;
             return angularVelocity;
         }
+        
+        /// <summary>
+        /// Calculates the average velocity over multiple frames
+        /// </summary>
+        /// <param name="objectTransform">The current position of the object</param>
+        /// <param name="previousPosition">Where the object was</param>
+        /// <param name="totalTime">How long ago was the object at previousPosition</param>
+        /// <returns></returns>
+        public static Vector3 CalculateVelocity(Transform objectTransform, Vector3 previousPosition, float totalTime)
+        {
+            // Calculate the displacement in world space
+            Vector3 displacement = objectTransform.position - previousPosition;
+            // Convert the displacement to local space
+            Vector3 localDisplacement = objectTransform.InverseTransformDirection(displacement);
+            // Return the local velocity
+            return localDisplacement / totalTime;
+        }
+
+        /// <summary>
+        /// Gives you the local rotation velocity between many frames. This is using world rotation and not local rotation.
+        /// </summary>
+        /// <returns>Vector3 containing the rotation velocity since last frame.</returns>
+        /// <param name="currentRotation">This is the current position of the transform. You should pass in "transform.rotation" here.</param>
+        /// <param name="previousRotation">The previous frames transform. Remember to save this frames rotation with "previousRotation = transform.rotation" or similar</param>
+        /// <param name="deltaTime">How long since the last update</param>
+        public static Vector3 CalculateAngularVelocity(Quaternion previousRotation, Quaternion currentRotation, float deltaTime)
+        {
+            // Calculate the difference between the current and previous rotation
+            Quaternion deltaRotation = Quaternion.Inverse(previousRotation) * currentRotation;
+
+            // Convert to Euler angles
+            Vector3 deltaEuler = deltaRotation.eulerAngles;
+
+            // Adjust for wrapping issues (e.g., 0-360 degree wrapping)
+            if (deltaEuler.x > 180) deltaEuler.x -= 360;
+            if (deltaEuler.y > 180) deltaEuler.y -= 360;
+            if (deltaEuler.z > 180) deltaEuler.z -= 360;
+
+            // Calculate angular velocity
+            return deltaEuler / deltaTime;
+        }
 
         /// <summary>
         /// This function checks what connected player is closest to the given transform.
