@@ -9,14 +9,16 @@ namespace com.vrcstuff.udon
     public class PuttSync : UdonSharpBehaviour
     {
         #region Public Settings
-        [Header("Sync Settings")]
-        [Range(0, 1f), Tooltip("How long the object should keep syncing fast for after requesting a fast sync")]
+
+        [Header("Sync Settings")] [Range(0, 1f), Tooltip("How long the object should keep syncing fast for after requesting a fast sync")]
         public float fastSyncTimeout = 0.25f;
 
-        [Tooltip("This lets you define a curve to scale back the speed of fast updates based on the number on players in the instance. You can leave this empty and a default curve will be applied when the game loads")]
+        [Tooltip(
+            "This lets you define a curve to scale back the speed of fast updates based on the number on players in the instance. You can leave this empty and a default curve will be applied when the game loads")]
         public AnimationCurve fastSyncIntervalCurve;
 
-        [Tooltip("This defines how often this often will be updated for remote players (in seconds) based on how far away they are from this GameObject. You can leave this empty and a default curve will be applied when the game loads")]
+        [Tooltip(
+            "This defines how often this often will be updated for remote players (in seconds) based on how far away they are from this GameObject. You can leave this empty and a default curve will be applied when the game loads")]
         public AnimationCurve remoteUpdateDistanceCurve;
 
         [Range(0.001f, 0.05f), Tooltip("Approximately the time it will take to catch up with the position of remote objects. A smaller value will reach the target faster.")]
@@ -25,88 +27,114 @@ namespace com.vrcstuff.udon
         [Tooltip("Experimental - Reduces network traffic by syncing")]
         public bool disableSyncWhileHeld = true;
 
-        [Header("Pickup Settings")]
-        [Tooltip("If enabled PuttSync will operate similar to VRC Object Sync")]
+        [Header("Pickup Settings")] [Tooltip("If enabled PuttSync will operate similar to VRC Object Sync")]
         public bool syncPositionAndRot = true;
+
         [Tooltip("Monitors a VRCPickup on the same GameObject. When it is picked up by a player fast syncs will be enabled automatically.")]
         public bool monitorPickupEvents = true;
+
         [Tooltip("Should this object be returned to its spawn position after players let go of it")]
         public bool returnAfterDrop = false;
+
         [Range(2f, 300f), Tooltip("If ReturnAfterDrop is enabled this object will be put back into its original position after this many seconds of not being held")]
         public float returnAfterDropTime = 10f;
+
         [Tooltip("Designate a script that is being called when object is returned. Calls the remote function written in the box below. ")]
         public UdonSharpBehaviour returnListener;
+
         public string remoteReturnFunction = "ReturnFunction";
+
         [Tooltip("Should the object be respawned if it goes below the height specified below?")]
         public bool autoRespawn = true;
+
         [Tooltip("The minimum height that this object can go to before being respawned (if enabled)")]
         public float autoRespawnHeight = -100f;
+
         public bool canManagePickupable = true;
+
         #endregion
 
         #region Private References
+
         private Rigidbody objectRB;
         private VRCPickup pickup;
+
         #endregion
 
         #region Synced Vars
+
         /// <summary>
         /// The last known position of this object from the network (synced between players)
         /// </summary>
-        [UdonSynced]
-        private Vector3 syncPosition;
+        [UdonSynced] private Vector3 syncPosition;
+
         /// <summary>
         /// The last known rotation of this object from the network (synced between players)
         /// </summary>
-        [UdonSynced]
-        private Quaternion syncRotation;
+        [UdonSynced] private Quaternion syncRotation;
+
         /// <summary>
         /// The respawn position for this object in world space
         /// </summary>
         public Vector3 originalPosition;
+
         /// <summary>
         /// The respawn rotation for this object in world space
         /// </summary>
         private Quaternion originalRotation;
-        [UdonSynced]
-        private int currentOwnerHandInt = (int)VRCPickup.PickupHand.None;
-        private VRCPickup.PickupHand currentOwnerHand
+
+        [UdonSynced] private int currentOwnerHandInt = (int)VRC_Pickup.PickupHand.None;
+
+        private VRC_Pickup.PickupHand currentOwnerHand
         {
-            get => (VRCPickup.PickupHand)currentOwnerHandInt;
+            get => (VRC_Pickup.PickupHand)currentOwnerHandInt;
             set => currentOwnerHandInt = (int)value;
         }
+
         public bool grabOriginalPosOnStart = true;
+
         #endregion
 
         #region Internal Working Vars
+
         private bool isBeingHeldByExternalScript = false;
+
         /// <summary>
         /// Amount of time (in seconds) between fast object syncs for this object (Scaled based on player count using fastSyncIntervalCurve)
         /// </summary>
         private float fastSyncInterval = 0.05f;
+
         private float fastSyncStopTime = -1f;
         private float returnAfterDropEndTime = -1f;
+
         /// <summary>
         /// True if we just received the first network sync for this object
         /// </summary>
         private bool isFirstSync = false;
+
         /// <summary>
         /// True if this object has had at least 1 network update
         /// </summary>
         private bool hasSynced = false;
+
         /// <summary>
         /// Keeps track of whether PuttSync is already monitoring remote updates and syncing positions etc
         /// </summary>
         private bool isHandlingRemoteUpdates = false;
+
         /// <summary>
         /// Used to allow a sync in case some extra data changed (e.g. player changed which hand they hold the pickup with)
         /// </summary>
         private bool extraDataChanged = false;
+
         private bool firstEnable = true;
 
         private VRCPlayerApi localPlayer;
         private float lastKnownDistanceUpdateValue = 0f;
         private Vector3 lastSyncVelocity = Vector3.zero;
+        private Vector3 lastSyncPos = Vector3.zero;
+        private Quaternion lastSyncRot = Quaternion.identity;
+
         #endregion
 
         void Start()
@@ -172,7 +200,7 @@ namespace com.vrcstuff.udon
             syncRotation = transform.localRotation;
 
             // If player is holding this object and PuttSync is tracking pickup stuff
-            if (monitorPickupEvents && currentOwnerHandInt != (int)VRCPickup.PickupHand.None)
+            if (monitorPickupEvents && currentOwnerHandInt != (int)VRC_Pickup.PickupHand.None)
             {
                 if (disableSyncWhileHeld)
                     UpdatePickupHandOffsets(); // Attaches the object to local space of the players hand on remote clients
@@ -214,20 +242,13 @@ namespace com.vrcstuff.udon
             // Disable pickup for other players if theft is disabled
             if (canManagePickupable && pickup != null)
             {
-                var newPickupState = true;
-
                 // If somebody else is holding this object disable pickup (when theft is disabled)
-                if (pickup.DisallowTheft && currentOwnerHandInt != (int)VRCPickup.PickupHand.None)
-                    newPickupState = false;
-
+                var newPickupState = !(pickup.DisallowTheft && currentOwnerHandInt != (int)VRC_Pickup.PickupHand.None);
+                
                 if (newPickupState != pickup.pickupable)
                     pickup.pickupable = newPickupState;
 
-                var shouldDropPickup = false;
-                if (!newPickupState)
-                    shouldDropPickup = true;
-                if (pickup.currentHand != VRCPickup.PickupHand.None)
-                    shouldDropPickup = true;
+                var shouldDropPickup = !newPickupState || pickup.currentHand != VRC_Pickup.PickupHand.None;
 
                 if (shouldDropPickup)
                     pickup.Drop();
@@ -236,44 +257,40 @@ namespace com.vrcstuff.udon
             if (syncPositionAndRot)
             {
                 // Attach this object to the players hand if they are currently holding it
-                if (disableSyncWhileHeld && currentOwnerHandInt != (int)VRCPickup.PickupHand.None)
+                if (disableSyncWhileHeld && currentOwnerHandInt != (int)VRC_Pickup.PickupHand.None)
                 {
-                    // TODO: This is a little bit jittery still - needs looking at eventually
-
-                    // Get the world space position/rotation of the hand that is holding this object
-                    var currentTrackedBone = currentOwnerHand == VRCPickup.PickupHand.Left ? HumanBodyBones.LeftHand : HumanBodyBones.RightHand;
+                    // This ends up working in world space instead of local space (it looks better)
+                    var currentTrackedBone = currentOwnerHand == VRC_Pickup.PickupHand.Left ? HumanBodyBones.LeftHand : HumanBodyBones.RightHand;
 
                     var handPosition = owner.GetBonePosition(currentTrackedBone);
                     var handRotation = owner.GetBoneRotation(currentTrackedBone);
-                    
-                    if (owner.IsUserInVR())
-                    {
-                        var trackingData = owner.GetTrackingData(currentOwnerHand == VRCPickup.PickupHand.Left ? VRCPlayerApi.TrackingDataType.LeftHand : VRCPlayerApi.TrackingDataType.RightHand);
 
-                        handPosition = trackingData.position;
-                        handRotation = trackingData.rotation;
-                    }
-
-                    // If the offset shave changed, try to lerp them?
-                    GetPickupHandOffsets(owner, out var currentOwnerHandOffset, out var currentOwnerHandOffsetRotation);
-
-                    var oldPos = transform.position;
-
-                    var newPosition = handPosition + transform.TransformDirection(syncPosition);
+                    var newPosition = handPosition + syncPosition;
                     var newOffsetRot = handRotation * syncRotation;
 
                     if (localPlayer != null)
-                        lastKnownDistanceUpdateValue = remoteUpdateDistanceCurve.Evaluate(Vector3.Distance(newPosition, localPlayer.GetPosition()));
-
-                    if (lastKnownDistanceUpdateValue == 0f)
                     {
-                        if ((currentOwnerHandOffset - syncPosition).magnitude > 0.1f)
-                            newPosition = Vector3.SmoothDamp(oldPos, newPosition, ref lastSyncVelocity, remoteUpdateSmoothTime);
+                        var t = transform.parent == null ? transform : transform.parent.transform;
 
-                        if (Quaternion.Angle(transform.rotation, syncRotation) > 1f)
+                        var distance = Vector3.Distance(newPosition, localPlayer.GetPosition());
+
+                        lastKnownDistanceUpdateValue = Mathf.Clamp(remoteUpdateDistanceCurve.Evaluate(distance), 0f, 30f);
+                    }
+
+                    // If offsets have changed enough then smooth out the movement
+                    if (!isFirstSync && hasSynced && lastKnownDistanceUpdateValue <= 0f)
+                    {
+                        if (Vector3.Distance(lastSyncPos, syncPosition) > .01f || Quaternion.Dot(lastSyncRot, syncRotation) < .999f)
                         {
-                            var lerpProgress = 1.0f - Mathf.Pow(0.001f, Time.deltaTime);
-                            newOffsetRot = Quaternion.Slerp(transform.rotation, newOffsetRot, lerpProgress);
+                            newPosition = Vector3.Lerp(transform.position, newPosition, Time.deltaTime * 15f);
+                            newOffsetRot = Quaternion.Slerp(transform.rotation, newOffsetRot, Time.deltaTime * 15f);
+                        }
+
+                        // When we get super close to the target offset - log this as the last set of offsets so we can stop smoothing things
+                        if (Vector3.Distance(transform.position, newPosition) < .001f && Quaternion.Dot(transform.rotation, newOffsetRot) > .9999f)
+                        {
+                            lastSyncPos = syncPosition;
+                            lastSyncRot = syncRotation;
                         }
                     }
 
@@ -284,12 +301,11 @@ namespace com.vrcstuff.udon
 
                     return;
                 }
-                else if ((transform.localPosition - syncPosition).magnitude > 0.001f || Quaternion.Angle(transform.localRotation, syncRotation) > 0.01f)
+
+                if ((transform.localPosition - syncPosition).magnitude > 0.001f || Quaternion.Dot(transform.localRotation, syncRotation) < 0.999f)
                 {
                     var newPosition = syncPosition;
                     var newRotation = syncRotation;
-
-                    var oldPos = transform.localPosition;
 
                     if (localPlayer != null)
                     {
@@ -297,7 +313,7 @@ namespace com.vrcstuff.udon
 
                         var distance = Vector3.Distance(t.TransformPoint(newPosition), localPlayer.GetPosition());
 
-                        lastKnownDistanceUpdateValue = remoteUpdateDistanceCurve.Evaluate(distance);
+                        lastKnownDistanceUpdateValue = Mathf.Clamp(remoteUpdateDistanceCurve.Evaluate(distance), 0f, 30f);
                     }
 
                     // If we're allowed to smooth the movement (If object is far away then we should just snap to where we last saw it)
@@ -313,8 +329,7 @@ namespace com.vrcstuff.udon
                     }
 
                     // Move this object
-                    transform.localPosition = newPosition;
-                    transform.localRotation = newRotation;
+                    transform.SetLocalPositionAndRotation(newPosition, newRotation);
 
                     // Run this for the next frame too
                     SendCustomEventDelayedSeconds(nameof(HandleRemoteUpdate), lastKnownDistanceUpdateValue);
@@ -403,12 +418,12 @@ namespace com.vrcstuff.udon
                 returnAfterDropEndTime = -1;
 
                 var shouldDropPickup = false;
-                if (pickup.DisallowTheft && !this.LocalPlayerOwnsThisObject() && currentOwnerHandInt != (int)VRCPickup.PickupHand.None)
+                if (pickup.DisallowTheft && !this.LocalPlayerOwnsThisObject() && currentOwnerHandInt != (int)VRC_Pickup.PickupHand.None)
                     shouldDropPickup = true;
                 if (!pickup.pickupable)
                     shouldDropPickup = true;
 
-                if (shouldDropPickup && (int)pickup.currentHand != (int)VRCPickup.PickupHand.None)
+                if (shouldDropPickup && (int)pickup.currentHand != (int)VRC_Pickup.PickupHand.None)
                 {
                     pickup.Drop();
                     return;
@@ -625,21 +640,12 @@ namespace com.vrcstuff.udon
                 return;
             }
 
-            var currentTrackedBone = currentOwnerHand == VRCPickup.PickupHand.Left ? HumanBodyBones.LeftHand : HumanBodyBones.RightHand;
+            var currentTrackedBone = currentOwnerHand == VRC_Pickup.PickupHand.Left ? HumanBodyBones.LeftHand : HumanBodyBones.RightHand;
 
             var handPosition = player.GetBonePosition(currentTrackedBone);
             var handRotation = player.GetBoneRotation(currentTrackedBone);
 
-            if (player.IsUserInVR())
-            {
-                var trackingData = player.GetTrackingData(currentOwnerHand == VRCPickup.PickupHand.Left ? VRCPlayerApi.TrackingDataType.LeftHand : VRCPlayerApi.TrackingDataType.RightHand);
-
-                handPosition = trackingData.position;
-                handRotation = trackingData.rotation;
-            }
-
-            // Work out new offsets from the players hand
-            posOffset = Vector3.Scale(-transform.InverseTransformPoint(handPosition), transform.localScale);
+            posOffset = transform.position - handPosition;
             rotOffset = Quaternion.Inverse(handRotation) * transform.rotation;
         }
     }
