@@ -16,7 +16,13 @@
         {
             "name":"com.vrcstuff.common",
             "releases":[
-                "https://github.com/VRCstuff/UDONStuff/releases/download/0.1.12/com.vrcstuff.common-0.1.12.zip"
+                "https://github.com/VRCstuff/UDONStuff/releases/download/0.1.13/com.vrcstuff.common-0.1.13.zip"
+            ]
+        },
+        {
+            "name":"com.vrcstuff.controls",
+            "releases":[
+                "https://github.com/VRCstuff/UDONStuff/releases/download/0.1.13/com.vrcstuff.controls-0.1.13.zip"
             ]
         }
     ]
