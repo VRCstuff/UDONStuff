@@ -236,6 +236,100 @@ namespace com.vrcstuff.udon
             }
             return closestPlayer;
         }
+
+        /// <summary>
+        /// This function looks through the playerobject for the requested user and finds the first best script for you. 
+        /// </summary>
+        /// <param name="player">99.99% of the time you want to pass in Networking.LocalPlayer</param>
+        /// <typeparam name="T">Asks for what component you want.</typeparam>
+        /// <returns>requested component</returns>
+        /// <example>_playerManager = Utils.FindComponentInPlayerObjects&lt;PlayerManager&gt;(Networking.LocalPlayer);</example>
+        public static T FindComponentInPlayerObjects<T>(VRCPlayerApi player) where T : Component
+        {
+            var objects = Networking.GetPlayerObjects(player);
+            for (int i = 0; i < objects.Length; i++)
+            {
+                if (!Utilities.IsValid(objects[i])) continue;
+                T foundComponent = objects[i].GetComponentInChildren<T>();
+                if (Utilities.IsValid(foundComponent)) return foundComponent;
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// This function looks through the playerobject for the requested user and finds all scripts for you. 
+        /// </summary>
+        /// <param name="player"></param>
+        /// <typeparam name="T"></typeparam>
+        /// <returns></returns>
+        /// <example>_controllerInputfollower = Utils.FindAllComponentsInPlayerObjects&lt;ControllerInputfollower&gt;(Networking.LocalPlayer);</example>
+        public static T[] FindAllComponentsInPlayerObjects<T>(VRCPlayerApi player) where T : Component
+        {
+            if (!Utilities.IsValid(player))
+            {
+                Debug.LogWarning("Player API is not valid.");
+                return new T[0];
+            }
+
+            var objects = Networking.GetPlayerObjects(player);
+            if (objects == null || objects.Length == 0)
+            {
+                Debug.LogWarning("No player objects found.");
+                return new T[0];
+            }
+
+            int totalComponents = 0;
+
+            // First pass: Count all components, including inactive ones
+            for (int i = 0; i < objects.Length; i++)
+            {
+                if (!Utilities.IsValid(objects[i]))
+                {
+                    Debug.LogWarning($"Invalid object at index {i}");
+                    continue;
+                }
+
+                Debug.Log($"Checking object: {objects[i].name}");
+
+                T[] foundComponents = null;
+                if (objects[i] != null)
+                {
+                    foundComponents = objects[i].GetComponentsInChildren<T>(true);
+                }
+
+                if (foundComponents != null)
+                {
+                    totalComponents += foundComponents.Length;
+                }
+            }
+
+            // Create an array with the correct size
+            T[] components = new T[totalComponents];
+            int index = 0;
+
+            // Second pass: Populate the array
+            for (int i = 0; i < objects.Length; i++)
+            {
+                if (!Utilities.IsValid(objects[i])) continue;
+
+                T[] foundComponents = null;
+                if (objects[i] != null)
+                {
+                    foundComponents = objects[i].GetComponentsInChildren<T>(true);
+                }
+
+                if (foundComponents != null)
+                {
+                    for (int j = 0; j < foundComponents.Length; j++)
+                    {
+                        components[index] = foundComponents[j];
+                        index++;
+                    }
+                }
+            }
+
+            return components;
+        }
     }
 
     #region Extensions
