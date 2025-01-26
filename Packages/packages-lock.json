@@ -47,7 +47,7 @@
       "url": "https://packages.unity.com"
     },
     "com.unity.ide.rider": {
-      "version": "3.0.28",
+      "version": "3.0.34",
       "depth": 0,
       "source": "registry",
       "dependencies": {
@@ -122,7 +122,7 @@
       "url": "https://packages.unity.com"
     },
     "com.unity.textmeshpro": {
-      "version": "3.0.6",
+      "version": "3.0.9",
       "depth": 0,
       "source": "registry",
       "dependencies": {
@@ -200,7 +200,8 @@
         "com.unity.timeline": "1.7.6",
         "com.unity.xr.management": "4.3.3",
         "com.unity.xr.oculus": "4.0.0",
-        "com.unity.postprocessing": "3.2.2"
+        "com.unity.postprocessing": "3.2.2",
+        "com.unity.ugui": "1.0.0"
       }
     },
     "com.vrchat.core.bootstrap": {
@@ -226,7 +227,8 @@
       "dependencies": {
         "com.unity.cinemachine": "2.9.7",
         "com.unity.textmeshpro": "3.0.6",
-        "com.unity.inputsystem": "1.2.0"
+        "com.unity.inputsystem": "1.2.0",
+        "com.unity.ai.navigation": "1.1.5"
       }
     },
     "com.vrcstuff.common": {
@@ -234,7 +236,7 @@
       "depth": 0,
       "source": "embedded",
       "dependencies": {
-        "com.vrchat.worlds": "3.7.x"
+        "com.vrchat.worlds": "^3.7.5"
       }
     },
     "com.vrcstuff.controls": {
@@ -242,8 +244,8 @@
       "depth": 0,
       "source": "embedded",
       "dependencies": {
-        "com.unity.textmeshpro": "3.0.6",
-        "com.vrchat.worlds": "3.7.x"
+        "com.vrchat.worlds": "^3.7.5",
+        "com.unity.textmeshpro": "3.0.6"
       }
     },
     "com.unity.modules.ai": {

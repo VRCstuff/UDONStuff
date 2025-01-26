@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c333ccfdd0cbdbc4ca30cef2dd6e6b9b, type: 3}
   m_Name: InteractForwarder
   m_EditorClassIdentifier: 
-  serializedUdonProgramAsset: {fileID: 11400000, guid: 6dab87a4de859b14a9c382fe8be107b8,
+  serializedUdonProgramAsset: {fileID: 11400000, guid: 031aaae27cf82ee41b888666ab3f932e,
     type: 2}
   udonAssembly: 
   assemblyError: 
