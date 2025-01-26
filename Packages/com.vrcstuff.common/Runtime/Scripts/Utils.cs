@@ -213,6 +213,31 @@ namespace com.vrcstuff.udon
             }
             return closestPlayer;
         }
+
+        /// <summary>
+        /// This function checks what connected player is closest to the given transform.
+        /// </summary>
+        /// <param name="targetTransform">This transform is what it's compared agains</param>
+        /// <returns>closest vrcplayer.</returns>
+        public static VRCPlayerApi GetClosestPlayer(Transform targetTransform, out float closestDistance)
+        {
+            VRCPlayerApi[] players = new VRCPlayerApi[100];
+            VRCPlayerApi closestPlayer = null;
+            closestDistance = Mathf.Infinity;
+            VRCPlayerApi.GetPlayers(players);
+            foreach (VRCPlayerApi player in players)
+            {
+                if (player == null) continue;                                                      //Skip empty slots.
+                float distance = Vector3.Distance(player.GetPosition(), targetTransform.position); //Check the distance
+                if (distance < closestDistance)                                                    //Checks who is the closest
+                {
+                    closestDistance = distance;
+                    closestPlayer = player;
+                }
+            }
+            return closestPlayer;
+        }
+
         /// <summary>
         /// This function checks what connected player is closest to the given transform.
         /// </summary>

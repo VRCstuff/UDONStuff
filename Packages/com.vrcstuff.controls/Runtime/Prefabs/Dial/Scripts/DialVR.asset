@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c333ccfdd0cbdbc4ca30cef2dd6e6b9b, type: 3}
   m_Name: DialVR
   m_EditorClassIdentifier: 
-  serializedUdonProgramAsset: {fileID: 11400000, guid: e99098806e45286499b18e2802fb2d95,
+  serializedUdonProgramAsset: {fileID: 11400000, guid: b358fcc40c9c1614ebe91db268c5de6e,
     type: 2}
   udonAssembly: 
   assemblyError: 

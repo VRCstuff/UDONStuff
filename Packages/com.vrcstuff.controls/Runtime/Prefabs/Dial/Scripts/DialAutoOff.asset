@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c333ccfdd0cbdbc4ca30cef2dd6e6b9b, type: 3}
   m_Name: DialAutoOff
   m_EditorClassIdentifier: 
-  serializedUdonProgramAsset: {fileID: 11400000, guid: 32f675a885686e0428e1fbb1f3587766,
+  serializedUdonProgramAsset: {fileID: 11400000, guid: 02b19f4005a3bcc438e94c8c00491b82,
     type: 2}
   udonAssembly: 
   assemblyError: 

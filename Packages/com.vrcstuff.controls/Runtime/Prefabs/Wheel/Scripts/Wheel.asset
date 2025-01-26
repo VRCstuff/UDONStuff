@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c333ccfdd0cbdbc4ca30cef2dd6e6b9b, type: 3}
   m_Name: Wheel
   m_EditorClassIdentifier: 
-  serializedUdonProgramAsset: {fileID: 11400000, guid: 8072811bcc308eb42956a55c95ec0ce8,
+  serializedUdonProgramAsset: {fileID: 11400000, guid: 7884beb50eaae6140a6212b1b47c591a,
     type: 2}
   udonAssembly: 
   assemblyError: 
