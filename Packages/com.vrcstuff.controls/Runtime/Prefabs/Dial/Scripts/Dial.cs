@@ -131,7 +131,10 @@ namespace com.vrcstuff.controls.Dial
         public void ApplyDefaultPosition()
         {
             // sanitize the default position
-            defaultPosition = Math.Clamp(defaultPosition, 0, numberOfPositions);
+            if (defaultPosition < 0)
+                defaultPosition = 0;
+            if (defaultPosition > numberOfPositions - 1)
+                defaultPosition = numberOfPositions - 1;
 
             // Set the current position of the Dial to the default
             currentPosition = defaultPosition;
