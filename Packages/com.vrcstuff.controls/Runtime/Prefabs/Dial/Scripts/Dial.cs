@@ -1,4 +1,5 @@
 ﻿
+using System;
 using TMPro;
 using UdonSharp;
 using UnityEngine;
@@ -6,7 +7,7 @@ using UnityEngine.UI;
 using VRC.SDKBase;
 using VRC.Udon;
 using com.vrcstuff.udon;
-
+using Object = UnityEngine.Object;
 
 
 namespace com.vrcstuff.controls.Dial
@@ -51,6 +52,8 @@ namespace com.vrcstuff.controls.Dial
         [Range(0, 60)]
         [Tooltip("Defines which state the dial starts at")]
         public int defaultPosition = 0;
+        [Tooltip("How long to wait before applying the default position at start")]
+        public float defaultPositionDelay = 0.2f;
         [Header("Data Setup")]
         [Tooltip("Rotates the labels so the text surrounds the Dial radially")]
         public bool radialLabelText = false;
@@ -120,11 +123,15 @@ namespace com.vrcstuff.controls.Dial
             // Grab where the knob current is so we can fix it there
             basePos = activeKnob.transform.localPosition;
 
+            CheckIfUserInVR();
+            
+            SendCustomEventDelayedSeconds(nameof(ApplyDefaultPosition), defaultPositionDelay);
+        }
+
+        public void ApplyDefaultPosition()
+        {
             // sanitize the default position
-            if (defaultPosition < 0)
-                defaultPosition = 0;
-            if (defaultPosition > numberOfPositions - 1)
-                defaultPosition = numberOfPositions - 1;
+            defaultPosition = Math.Clamp(defaultPosition, 0, numberOfPositions);
 
             // Set the current position of the Dial to the default
             currentPosition = defaultPosition;
@@ -149,8 +156,6 @@ namespace com.vrcstuff.controls.Dial
             }
 
             SetDialPosition(GetCurrentPosition());
-
-            CheckIfUserInVR();
         }
 
         public int GetCurrentPosition()
