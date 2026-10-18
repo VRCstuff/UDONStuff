@@ -276,7 +276,7 @@ namespace com.vrcstuff.controls.wheel
                 }
 
                 if (puttSync != null)
-                    puttSync.RequestFastSync();
+                    puttSync._RequestFastSync();
 
                 UpdateUdonBehaviour(false);
             }
